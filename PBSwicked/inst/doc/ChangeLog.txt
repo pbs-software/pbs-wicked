@@ -1,0 +1,18 @@
+PBSwicked Changes
+===================================
+Authors: RH  = Rowan Haigh
+         NF  = Nick Fisch
+-----------------------------------
+CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), where: 
+	Major: Indicates a significant change that might break existing code.
+	Minor: Indicates the addition of new features or improvements, while generally maintaining backward compatibility.
+	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
+-----------------------------------
+
+0.0.1 (2025-12-08)  [Rcheck=F, Rbuild=F]
+  * R code
+    + Re-arranged NF code to perform a geospatial/geostatistical analysis on synoptic surveys (RH 251208)
+  * Documentation
+    + Called package 'wicked' because it uses pseudo-R code by Wickham et al.
+    + NOT an R package yet.
+
