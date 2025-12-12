@@ -9,6 +9,13 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.0.2 (2025-12-12)  [Rcheck=F, Rbuild=F]
+  * R code
+    + Refined the geospatial code (RH 251212)
+    + Moved three functions and one data object into module called `wicked_geostat.r' (RH 251212)
+  * Documentation
+    + Created Rd files for 3 functions (`wickSSD', `wickTMB', `pickIDX') and 1 data object (`tmbModels') (RH 251212)
+
 0.0.1 (2025-12-08)  [Rcheck=F, Rbuild=F]
   * R code
     + Re-arranged NF code to perform a geospatial/geostatistical analysis on synoptic surveys (RH 251208)
