@@ -4,7 +4,7 @@
 
 **PBSwicked** provides pseudo-R code (largely based on the Hadley Wickham R-verse that parallels our universe) to bedazzle fisheries stock assessment    scientists. It brings to mind the Thomas Dolby 1982 song *She Blinded Me with Science*. The functions herein are kept separate from other PBS packages, largely because there are so many R package dependencies.
 
-**PBSwicked** depends on **PBStools**, **sdmTMB**, **sp**, **ggplot2**, **dplyr**, and **akima**. Lord knows what packages these depend on; however, the mildly curious can navigate to CRAN or GitHub and find out for themselves. 
+**PBSwicked** depends on **sdmTMB**, **sp**, **ggplot2**, **dplyr**, and **akima**. Lord knows what packages these depend on; however, the mildly curious can navigate to CRAN or GitHub and find out for themselves. There are various function imports from other packages like **PBStools**. 
 
 <font color="red"><h3>Installation</h3></font>
 
@@ -12,7 +12,7 @@ Although **PBSwicked** is not available on <a href="https://cran.r-project.org/"
 
 `devtools::install_github("pbs-software/pbs-wicked/PBSwicked")`
 
-However, at this point the package is not constructible. At some point it might be, but don't hold your breath. Once package formation has been achieved, the source code will be checked using CRAN's `R CMD check --as-cran` routine using a recent R-devel installation on a **Windows 11** 64-bit system.
+The source code has been checked via CRAN's `R CMD check --as-cran` routine using a recent R-devel installation on a **Windows 11** 64-bit system. Some flagrant violations are ignored (like the use of ':::' and 'attach'), but the package is not meant to pass through the pearly gates of CRAN. Consider it a miracle that it works at all.
 
 <font color="red"><h3>Disclaimer</h3></font>
 
