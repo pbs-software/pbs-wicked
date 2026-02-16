@@ -9,8 +9,8 @@
 }
 \usage{
 pickIDX(survey_lab="SYN QCS", species="silvergray rockfish", 
-   datnam, idxnam, pixnam, plot.maps=FALSE, 
-   png=FALSE, pngres=400, PIN=c(8, 6), lang=c("e"))
+   datnam, idxnam, pixnam, plot.maps=FALSE, tabs=FALSE,
+   png=FALSE, pngres=400, PIN=c(8, 6), lang=c("f","e"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,6 +22,7 @@ pickIDX(survey_lab="SYN QCS", species="silvergray rockfish",
     which contains chosen index results from \code{wickTMB}}
   \item{pixnam}{\code{character} -- output name of binary RDA file to store figures}
   \item{plot.maps}{\code{logical} -- if \code{TRUE}, plot the predictiion maps}
+  \item{tabs}{\code{logical} -- if \code{TRUE}, write index tables to CSV file}
   \item{png}{\code{logical} -- if \code{TRUE}, save the figures 
     (prediction maps, geospatial index series) to a PNG file}
   \item{pngres}{\code{numeric} -- resolution (pixels/inch) of PNG image}
@@ -58,13 +59,33 @@ pickIDX(survey_lab="SYN QCS", species="silvergray rockfish",
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus opus}: remote office, Vancouver BC\cr
-  Last modified \code{Rd: 2025-12-12}
+  Last modified \code{Rd: 2026-02-16}
 }
 \note{
   Original code from Nick Fisch to determine geo-standardized synoptic survey indices.\cr
-  Uses Hadley Wickham pseudo-R packages.
+  Uses Hadley Wickham pseudo-R packages and pixie dust.
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
+\section{Function Calls}{
+	To fit geospatial model to survey series, call the following functions:\cr
+	\enumerate{
+		\item \code{wickSSD(survey_lab="SYN QCS", species="widow rockfish")}
+			\itemize{
+				\item extracts survey series data (SSD) -- \emph{takes forever}
+				\item saves SSD to a binary file to avoid running the query over and over
+			}
+		\item \code{wickTMB(survey_lab="SYN QCS", species="widow rockfish", tmbModels=tmbModels)}
+			\itemize{
+				\item fits 14 TMB models to the geospatial data -- \emph{takes forever}
+				\item chooses the best model using AIC and sanity checks
+			}
+		\item \code{pickIDX(survey_lab="SYN QCS", species="widow rockfish", plot.maps=T, png=T)}
+			\itemize{
+				\item plots abundance indices, both geospatial and design-based
+				\item writes the indices (standardised by geometric mean) to a CSV
+			}
+		}
+}
 \seealso{
   In package \pkg{PBSwicked}:\cr
   \code{\link[PBSwicked]{wickSSD}},
@@ -77,6 +98,6 @@ pickIDX(survey_lab="SYN QCS", species="silvergray rockfish",
 % \keyword{ ~kwd2 }
 % Use only one keyword per line.
 % For non-standard keywords, use \concept instead of \keyword:
-\concept{wicked_geostat.r}
+\concept{wicked_geostat}
 % \concept{ ~cpt2 }
 % Use only one concept per line.

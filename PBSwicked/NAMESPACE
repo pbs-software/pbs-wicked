@@ -13,9 +13,9 @@ akima, dplyr, ggplot2, sdmTMB, sp
 importFrom("grDevices", "dev.off")
 importFrom("graphics", "abline", "arrows", "axis", "legend", "lines", "points", "polygon")
 importFrom("stats", "AIC", "predict", "qqnorm", "residuals", "sd")
-importFrom("utils", "data")
-importFrom("PBStools", "changeLangOpts", "clearFiles", "createFdir", "eop")
-importFrom("PBSmodelling", "addLabel", "expandGraph", "lucent")
+importFrom("utils", "data", "write.csv")
+importFrom("PBStools", ".flush.cat", "changeLangOpts", "clearFiles", "createFdir", "eop", "lenv", "linguaFranca")
+importFrom("PBSmodelling", "addLabel", "addLegend", "expandGraph", "lucent")
 importFrom("gfdata", "get_ssids", "get_survey_index", "get_survey_sets")
 #importFrom("gfplot", "ll2utm", "interp_survey_bathymetry", "synoptic_grid")  ## not exported from gfplot
 importFrom("ggsidekick", "theme_sleek")

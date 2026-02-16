@@ -9,6 +9,14 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.1.0 (2026-02-16)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Revised geospatial functions in `wicked_geostat.r' (RH 260213)
+      - debugged code that caused an error when running QCS, WCHG, HS, and WCVI indices for WWR
+      - re-arranged saving and loading in `wickSSD' to ensure that querying only occurs once
+      - enclosed functions prone to fail within the try() function in `tmbModels' and `wickTMB'
+      - improved the plotting of the final fitted geospatial index series
+
 0.0.2 (2025-12-12)  [Rcheck=F, Rbuild=F]
   * R code
     + Refined the geospatial code (RH 251212)

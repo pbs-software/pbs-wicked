@@ -1,6 +1,6 @@
 ## <font color="#6A5ACD">PBSwicked: Wicked Wonders from Another Universe</font> ##
 
-<font color="red">&copy; Fisheries and Oceans Canada (2025)</font>
+<font color="red">&copy; Fisheries and Oceans Canada (2025-2026)</font>
 
 **PBSwicked** provides pseudo-R code (largely based on the Hadley Wickham R-verse that parallels our universe) to bedazzle fisheries stock assessment    scientists. It brings to mind the Thomas Dolby 1982 song *She Blinded Me with Science*. The functions herein are kept separate from other PBS packages, largely because there are so many R package dependencies.
 

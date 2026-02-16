@@ -1,6 +1,6 @@
 Package: PBSwicked
-Version: 0.0.2
-Date:    2025-12-12
+Version: 0.1.0
+Date:    2026-02-16
 Title:   Wicked Wonders from Another Universe
 Authors@R: c(
    person("Rowan", "Haigh", role = c("aut", "cre"), email = "rowan.haigh@dfo-mpo.gc.ca"),
@@ -8,7 +8,7 @@ Authors@R: c(
    )
 Author:      Rowan Haigh [aut, cre], Nick Fisch [ctb]
 Maintainer:  Rowan Haigh <rowan.haigh@dfo-mpo.gc.ca>
-Copyright:   2025-2025, Fisheries and Oceans Canada
+Copyright:   2025-2026, Fisheries and Oceans Canada
 Depends:     R (>= 4.6.0), sdmTMB, sp, ggplot2, dplyr, akima
 Imports:     grDevices, graphics, stats, utils, PBStools, PBSmodelling, gfdata, ggsidekick, fmesher
 NeedsCompilation: no

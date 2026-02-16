@@ -24,7 +24,7 @@
 \usage{tmbModels}
 \format{
   The format is:\cr
-  List of 14 functions, all with argument \code{surv_wUTM}\cr
+  List of 14 functions, all with arguments \code{surv_wUTM} and \code{mesh}\cr
   01_Delta_Lognormal\cr
   02_Delta_Lognormal_with_depth\cr
   03_Tweedie\cr
@@ -60,8 +60,33 @@
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus opus}: remote office, Vancouver BC\cr
-  Last modified \code{Rd: 2025-12-12}
+  Last modified \code{Rd: 2026-02-13}
+}
+\note{
+  Original code from Nick Fisch to determine geo-standardized synoptic survey indices.\cr
+  Uses Hadley Wickham pseudo-R packages and pixie dust.
+}
+%% ~Make other sections like Warning with \section{Warning }{....} ~
+\section{Function Calls}{
+	To fit geospatial model to survey series, call the following functions:\cr
+	\enumerate{
+		\item \code{wickSSD(survey_lab="SYN QCS", species="widow rockfish")}
+			\itemize{
+				\item extracts survey series data (SSD) -- \emph{takes forever}
+				\item saves SSD to a binary file to avoid running the query over and over
+			}
+		\item \code{wickTMB(survey_lab="SYN QCS", species="widow rockfish", tmbModels=tmbModels)}
+			\itemize{
+				\item fits 14 TMB models to the geospatial data -- \emph{takes forever}
+				\item chooses the best model using AIC and sanity checks
+			}
+		\item \code{pickIDX(survey_lab="SYN QCS", species="widow rockfish", plot.maps=T, png=T)}
+			\itemize{
+				\item plots abundance indices, both geospatial and design-based
+				\item writes the indices (standardised by geometric mean) to a CSV
+			}
+		}
 }
 \keyword{datasets}
-\concept{wicked_geostat.r}
+\concept{wicked_geostat}
 
