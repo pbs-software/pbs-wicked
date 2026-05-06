@@ -1,16 +1,17 @@
 Package: PBSwicked
-Version: 0.1.0
-Date:    2026-02-16
+Version: 0.2.0
+Date:    2026-05-06
 Title:   Wicked Wonders from Another Universe
 Authors@R: c(
    person("Rowan", "Haigh", role = c("aut", "cre"), email = "rowan.haigh@dfo-mpo.gc.ca"),
-   person("Nick", "Fisch", role = "ctb", email = "nick.fisch@dfo-mpo.gc.ca")
+   person("Nick", "Fisch", role = "ctb", email = "nick.fisch@dfo-mpo.gc.ca"),
+   person("Dana", "Haggarty", role = "ctb", email = "dana.haggarty@dfo-mpo.gc.ca")
    )
-Author:      Rowan Haigh [aut, cre], Nick Fisch [ctb]
+Author:      Rowan Haigh [aut, cre], Nick Fisch [ctb], Dana Haggarty [ctb]
 Maintainer:  Rowan Haigh <rowan.haigh@dfo-mpo.gc.ca>
 Copyright:   2025-2026, Fisheries and Oceans Canada
 Depends:     R (>= 4.6.0), sdmTMB, sp, ggplot2, dplyr, akima
-Imports:     grDevices, graphics, stats, utils, PBStools, PBSmodelling, gfdata, ggsidekick, fmesher
+Imports:     grDevices, graphics, stats, utils, PBSmodelling, PBStools, gfdata, ggsidekick, fmesher
 NeedsCompilation: no
 Description: Wicked pseudo-R code to bedazzle fisheries stock assessment
    scientists. Dependencies galore reveal a cascade of sparkling

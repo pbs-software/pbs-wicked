@@ -36,19 +36,49 @@ https://github.com/pbs-software
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "aes",
   "cell_area", "coord_fixed",
+  "count_bait_only", "count_bent_broken", "count_empty_hooks", "count_non_target_species", "count_target_species",
   "delta_gamma", "delta_gengamma", "delta_lognormal", "depth",
   "epsilon_st2", "est2", "est_non_rf2", 
-  "facet_wrap", "full_join",
+  "facet_wrap", "fishing_event_id", "full_join",
   "geom_raster", "get_index", "ggplot", "ggtitle",
+  "hook_adjust_factor",
   "make_mesh", "mesh", "mnam",
   "omega_s2",
-  "predictions", 
+  "predictions", "prop_bait_hooks",
   "rawindex",
   "sanity", "scale_fill_gradient2", "scale_fill_viridis_c", "sdmTMB", "sdmTMBcontrol",
-  "select", "surv_wUTM", "survey", 
-  "theme_set", "tidy", "tweedie",
+  "select", "species", "surv_wUTM", "survey", 
+  "theme_set", "tidy", "total_hooks", "tweedie",
   "X",
-  "Y"
+  "Y", "year"
 	), package="PBSwicked")
 
+wickiverb = c(
+"aick"="add|adjust",
+"bick"="back|begin|bring",
+"cick"="call|change|choose|cut",
+"dick"="detect|display|draw|drop",
+"eick"="echo|edit|erase",
+"fick"="file|filter|find|fix|flush",
+"gick"="get|give|grab",
+"hick"="hack|halt|hide|hold",
+"iick"="import|include|insert",
+"jick"="jibe|join|jot|jump",
+"kick"="keep|kill",
+"lick"="label|link|list|log",
+"mick"="make|match|maximize|mend|merge",
+"nick"="name|need|note",
+"oick"="omit|open|order",
+"pick"="pass|pick|plot|post|print|put",
+"qick"="query|quit",
+"rick"="read|reduce|replace|run",
+"sick"="save|select|set|show|sum",
+"tick"="take|tabulate|test|trim|try",
+"uick"="undo|unite|unpack|update|upload|use",
+"vick"="validate|verify|view|visualize",
+"wick"="wait|warn|wipe|wrap|write",
+"xick"="exit",## wing it for 'x'
+"yick"="yap|yield",
+"zick"="zap|zip|zoom"
+)
 

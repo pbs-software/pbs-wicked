@@ -14,7 +14,7 @@ importFrom("grDevices", "dev.off")
 importFrom("graphics", "abline", "arrows", "axis", "legend", "lines", "points", "polygon")
 importFrom("stats", "AIC", "predict", "qqnorm", "residuals", "sd")
 importFrom("utils", "data", "write.csv")
-importFrom("PBStools", ".flush.cat", "changeLangOpts", "clearFiles", "createFdir", "eop", "lenv", "linguaFranca")
+importFrom("PBStools", ".flush.cat", "changeLangOpts", "clearFiles", "createFdir", "createTdir", "eop", "lenv", "linguaFranca", "toUpper")
 importFrom("PBSmodelling", "addLabel", "addLegend", "expandGraph", "lucent")
 importFrom("gfdata", "get_ssids", "get_survey_index", "get_survey_sets")
 #importFrom("gfplot", "ll2utm", "interp_survey_bathymetry", "synoptic_grid")  ## not exported from gfplot

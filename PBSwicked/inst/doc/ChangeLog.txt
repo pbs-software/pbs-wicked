@@ -9,6 +9,14 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.2.0 (2026-05-06)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Added function `getHBLL()' (RH 260506)
+      - has been used since 2022 but was too wicked to appear in existing PBS packages
+    + Added new object called `wickiverb' which might be used as guidance for function names in future (RH 260506)
+      - verbs paste0(letter,"ick") could replace the verb in verbNoun functions
+      - e.g.,  wickiverb["gick"] --> "get|give|grab", so 'getHBLL' might become 'gickHBLL' (to emphasize the wicked nature of code therein)
+
 0.1.0 (2026-02-16)  [Rcheck=T, Rbuild=T]
   * R code
     + Revised geospatial functions in `wicked_geostat.r' (RH 260213)

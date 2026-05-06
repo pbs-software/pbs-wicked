@@ -8,7 +8,7 @@
 
 <font color="red"><h3>Installation</h3></font>
 
-Although **PBSwicked** is not available on <a href="https://cran.r-project.org/">CRAN</a> (Comprehensive R Archive Network), the source code appears on <a href="https://github.com/pbs-software/pbs-tools">GitHub</a> and can be built in R using:
+Although **PBSwicked** is not available on <a href="https://cran.r-project.org/">CRAN</a> (Comprehensive R Archive Network), the source code appears on <a href="https://github.com/pbs-software/pbs-wicked">GitHub</a> and can be built in R using:
 
 `devtools::install_github("pbs-software/pbs-wicked/PBSwicked")`
 
