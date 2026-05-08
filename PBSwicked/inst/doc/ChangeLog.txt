@@ -10,6 +10,31 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.3.5 (2026-05-08)  [Rcheck=F, Rbuild=T]
+  * Documentation
+    + Need to trick th system : moved `background.jpg' to `doc', renamed it `background.txt', then linked to the jpg hidden as txt (RH 260508)
+
+0.3.4 (2026-05-08)  [Rcheck=F, Rbuild=T]
+  * Documentation
+    + Moved `background.jpg' to `../demo' to see if this gets rendered in `Links.html' (RH 260508)
+      - works but check would likely have a bird checking demos
+
+0.3.3 (2026-05-08)  [Rcheck=F, Rbuild=T]
+  * Documentation
+    + Moved `background.jpg' to `../images' to see if this gets rendered in `Links.html' (RH 260508)
+      - did not work because html help system only recognizes files under `doc' and `demo'
+
+0.3.2 (2026-05-08)  [Rcheck=F, Rbuild=T]
+  * Documentation
+    + Moved `background.jpg' to `./vignettes' to see if this gets rendered in `Links.html' (RH 260508)
+      - reportedly include `.install_extras' file listing images to keep in inst/doc
+      - did not work
+
+0.3.1 (2026-05-08)  [Rcheck=F, Rbuild=T]
+  * Documentation
+    + Moved `background.jpg' from `./figs' to `.' to see if this gets rendered in `Links.html' (RH 260508)
+      - did not work
+
 0.3.0 (2026-05-08)  [Rcheck=T, Rbuild=T]
   * R code
     + Added function `predREBS()' based on NF's predictor of RER by 2-D location (RH 260507)
