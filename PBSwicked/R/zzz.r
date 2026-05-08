@@ -38,7 +38,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "cell_area", "coord_fixed",
   "count_bait_only", "count_bent_broken", "count_empty_hooks", "count_non_target_species", "count_target_species",
   "delta_gamma", "delta_gengamma", "delta_lognormal", "depth",
-  "epsilon_st2", "est2", "est_non_rf2", 
+  "epsilon_st2", "est", "est2", "est_non_rf2", 
   "facet_wrap", "fishing_event_id", "full_join",
   "geom_raster", "get_index", "ggplot", "ggtitle",
   "hook_adjust_factor",

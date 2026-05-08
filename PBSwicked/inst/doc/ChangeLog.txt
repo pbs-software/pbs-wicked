@@ -2,12 +2,21 @@ PBSwicked Changes
 ===================================
 Authors: RH  = Rowan Haigh
          NF  = Nick Fisch
+         BH  = Dana Haggarty
 -----------------------------------
 CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), where: 
 	Major: Indicates a significant change that might break existing code.
 	Minor: Indicates the addition of new features or improvements, while generally maintaining backward compatibility.
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
+
+0.3.0 (2026-05-08)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Added function `predREBS()' based on NF's predictor of RER by 2-D location (RH 260507)
+  * Documentation
+    + Revised `README.md' for the Github main page (RH 260508)
+    + Added `Links.html', featuring the Wicked Witch of the West (RH 260508)
+    + Added `predREBS.Rd' for the new function `predREBS (RH 260507)
 
 0.2.0 (2026-05-06)  [Rcheck=T, Rbuild=T]
   * R code

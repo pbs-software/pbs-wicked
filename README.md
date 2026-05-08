@@ -14,6 +14,10 @@ Although **PBSwicked** is not available on <a href="https://cran.r-project.org/"
 
 The source code has been checked via CRAN's `R CMD check --as-cran` routine using a recent R-devel installation on a **Windows 11** 64-bit system. Some flagrant violations are ignored (like the use of ':::' and 'attach'), but the package is not meant to pass through the pearly gates of CRAN. Consider it a miracle that it works at all.
 
+<font color="red"><h3>Hadley Wickham</h3></font>
+
+Although the maintainer castigates the use of R-overlay language, largely authored by <a href="https://hadley.nz/">Hadley Wickham</a>, there is tremendous respect for the man. We share a few commonalities (country of birth, friends of Dorothy, data visualization), which transcend our differences. While Hadley prefers the <a href="https://en.wikipedia.org/wiki/Tidyverse">tidyverse</a>, the maintainer prefers an 'untidyverse'. The reference to 'wicked' herein, a not-so-subtle play on 'Wickham', is a tribute to the man's wicked R code in all senses of the word -- *awesome*, *excellent*, *skillful*, *complex*, and *slightly bad in a good way*. Most users prefer the tidyverse, and so this package houses morsels from that realm.
+
 <font color="red"><h3>Disclaimer</h3></font>
 
 "Fisheries and Oceans Canada (DFO) GitHub project code is provided on an 'as is' basis and the user assumes responsibility for its use. DFO relinquishes control of the information and assumes no responsibility to protect the integrity, confidentiality, or availability of the information. Any claims against DFO stemming from the use of its GitHub project will be governed by all applicable Canadian Federal laws. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation or favouring by DFO. The Fisheries and Oceans Canada seal and logo, or the seal and logo of a DFO bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by DFO or the Canadian Government.”
