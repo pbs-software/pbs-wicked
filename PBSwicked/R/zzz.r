@@ -34,7 +34,7 @@ https://github.com/pbs-software
 # No Visible Bindings
 # ===================
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
-  "aes",
+  "aes", "age_reading_id", "ageing_method_desc",
   "cell_area", "coord_fixed",
   "count_bait_only", "count_bent_broken", "count_empty_hooks", "count_non_target_species", "count_target_species",
   "delta_gamma", "delta_gengamma", "delta_lognormal", "depth",
@@ -42,13 +42,14 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "facet_wrap", "fishing_event_id", "full_join",
   "geom_raster", "get_index", "ggplot", "ggtitle",
   "hook_adjust_factor",
-  "make_mesh", "mesh", "mnam",
+  "indReaderSame",
+  "make_mesh", "maximum_age", "mesh", "minimum_age", "mnam",
   "omega_s2",
-  "predictions", "prop_bait_hooks",
-  "rawindex",
-  "sanity", "scale_fill_gradient2", "scale_fill_viridis_c", "sdmTMB", "sdmTMBcontrol",
-  "select", "species", "surv_wUTM", "survey", 
-  "theme_set", "tidy", "total_hooks", "tweedie",
+  "PlotOutputFn", "Prec_Age", "predictions", "Primary_Age", "prop_bait_hooks",
+  "rawindex", "readerDiff", "Resids", "rMx", "RunFn",
+  "sameCount", "sanity", "scale_fill_gradient2", "scale_fill_viridis_c", "sdmTMB", "sdmTMBcontrol",
+  "select", "species", "specimen_age", "surv_wUTM", "survey", 
+  "theme_set", "tidy", "total_hooks", "totalCount", "tweedie",
   "X",
   "Y", "year"
 	), package="PBSwicked")

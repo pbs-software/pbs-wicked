@@ -10,9 +10,13 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.4.0 (2026-05-08)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Added function `calcAE()', which uses Punt's 'AgeingError' package (RH 260511)
+
 0.3.5 (2026-05-08)  [Rcheck=F, Rbuild=T]
   * Documentation
-    + Need to trick th system : moved `background.jpg' to `doc', renamed it `background.txt', then linked to the jpg hidden as txt (RH 260508)
+    + Need to trick the system : moved `background.jpg' to `doc', renamed it `background.txt', then linked to the txt that was a hidden jpg (RH 260508)
 
 0.3.4 (2026-05-08)  [Rcheck=F, Rbuild=T]
   * Documentation
