@@ -11,6 +11,8 @@ akima, dplyr, ggplot2, sdmTMB, sp
 
 # writeLines(imports_for_undefined_globals(txt))
 
+importFrom("AgeingError", "run", "write_files")
+importFrom("boot", "boot")
 importFrom("fmesher", "fm_rcdt_2d_inla", "fm_nonconvex_hull", "fm_fem", "fm_basis")
 importFrom("gfdata", "get_ssids", "get_survey_index", "get_survey_sets")
 #importFrom("gfplot", "ll2utm", "interp_survey_bathymetry", "synoptic_grid")  ## not exported from gfplot
@@ -20,7 +22,7 @@ importFrom("grDevices", "colorRampPalette", "dev.off")
 importFrom("here", "here")
 importFrom("PBSmapping", "addPolys", "convUL", "plotMap")
 importFrom("PBSmodelling", "addLabel", "addLegend", "expandGraph", "lucent", "show0", "unpackList")
-importFrom("PBStools", ".flush.cat", "addStrip", "changeLangOpts", "clearFiles", "createFdir", "createTdir", "eop", "lenv", "linguaFranca", "toUpper", "zapSeamounts")
-importFrom("stats", "AIC", "binomial", "coef", "lm", "nls", "predict", "qqnorm", "residuals", "rnorm", "sd")
+importFrom("PBStools", ".flush.cat", "addStrip", "changeLangOpts", "clearFiles", "createFdir", "createTdir", "crossTab", "eop", "getVer", "lenv", "linguaFranca", "toUpper", "zapSeamounts")
+importFrom("stats", "AIC", "binomial", "coef", "lm", "nls", "predict", "qnorm", "qqnorm", "residuals", "rnorm", "sd")
 importFrom("utils", "data", "write.csv")
 

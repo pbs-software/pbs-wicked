@@ -2,6 +2,7 @@ PBSwicked Changes
 ===================================
 Authors: RH  = Rowan Haigh
          NF  = Nick Fisch
+         KH  = Kendra Holt
          BH  = Dana Haggarty
 -----------------------------------
 CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), where: 
@@ -9,6 +10,14 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Minor: Indicates the addition of new features or improvements, while generally maintaining backward compatibility.
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
+
+0.4.1 (2026-05-28)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Modified `calcAE' to better represent the final figure of SD vs. Age from the AgeingError model (RH 260528)
+      - added an argument called `useTMB' to use function `run' rather than `RunFn' (deprecated)
+      - added an argument called `debug'
+  * Documentation
+    + Added KH as a contributor via `calcAE' (forgot earlier)
 
 0.4.0 (2026-05-08)  [Rcheck=T, Rbuild=T]
   * R code

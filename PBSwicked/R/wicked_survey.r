@@ -10,9 +10,10 @@
 ## Note: not sure whether to rename functions so it's obvious that they are wicked
 ## See object `wickiverb' for possible guidance (RH 260506)
 
-## calcAE-------------------------------2026-05-11
-##  Calculate ageing error using the function 'RunFn()'
+## calcAE-------------------------------2026-05-28
+##  Calculate ageing error using the function 'run()'
 ##  from the R package 'AgeingError'.
+## Note: function 'RunFn()' now deprecated (Ian Taylor, pers.commm.)
 ##  Adapted from Kendra Holt's code used in Petrale 2024
 ##  Attempt to de-hadley the code
 ##  ageDat  : use data from 'gfb_age_precision.sql'
@@ -20,7 +21,7 @@
 ##  species : common species name
 ## ---------------------------------------------RH
 calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
-	hadley=FALSE, maxage=60, 
+	hadley=FALSE, maxage=60, useTMB=TRUE, debug=FALSE,
 	png=FALSE, pngres=400, PIN=c(8,8), lang="e")
 {
 	cwd = getwd()
@@ -32,83 +33,91 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 	) ## defunct
 	#spcode = "AE" ## AE=AgeingError : just keep it the same for all species
 
-	## From GFsynopsis res doc appendix A, it seems likely that age_reading_type_code = 2 is the initial primary age, while age_reading_type_code = 3 is the precision age.
-	## Problem: does not seem to be a code for final age
-	## age_reading_type_code : field has two unique values: 2, 3.
+	## From gfsynopsis res doc appendix A, it seems likely that age_reading_type_code = 2 is the initial primary age, while age_reading_type_code = 3 is the precision age.
 
 	#require(ggplot2)
 	#require(dplyr)
 	#require(here)
 	wd = getwd()
 
-	## Rename columns to mesh with Kendra Holt
+	## Rename RH columns to mesh with Kendra Holt
 	colnames(ageDat) = c("specimen_id", "year", "species_code", "species_common_name", "age_reading_type_code", "ageing_method_desc", "specimen_age", "minimum_age", "maximum_age", "employee_id", "age_reading_id", "ageing_method")
+
+	## Shortcut for all age reader types
+	if (debug) {
+		delim  <- "============================================================"
+		master <- crossTab(ageDat, c("specimen_id","age_reading_type_code"), "specimen_age", mean)
+		.flush.cat(delim, "\n", "DEBUG : see object called 'master' -- specimen ages by age reader type", "\n", delim, "\n", sep="")
+		browser()
+	}
 
 	## Change to wide format, aligned by specimen ID =====================================
 	if (hadley) {
 		ageDat <- ageDat %>% filter(ageing_method_desc != "OTOLITH SURFACE ONLY") # remove surface ages (hadley)
 		## --- extract precision ages
-		dat.precAge <- ageDat %>% filter(age_reading_id == 3) %>% select(-c("species_common_name", "species_code", "employee_id", "ageing_method", "age_reading_type_code"))
+		dat.precAge <- ageDat %>% filter(age_reading_id == atype[2]) %>% select(-c("species_common_name", "species_code", "employee_id", "ageing_method", "age_reading_type_code"))
 		dat.precAge <- dat.precAge %>% rename(Prec_Age = specimen_age, Prec_minAge = minimum_age, Prec_maxAge = maximum_age)# %>% mutate(age_reading_type = rep("precision", nrow(dat.precAge)))
 		## --- extract primary ages
-		dat.primAge <- ageDat %>% filter(age_reading_id == 2) %>% select(-c("species_common_name", "species_code", "employee_id", "ageing_method", "age_reading_type_code"))
+		dat.primAge <- ageDat %>% filter(age_reading_id == atype[1]) %>% select(-c("species_common_name", "species_code", "employee_id", "ageing_method", "age_reading_type_code"))
 		dat.primAge <- dat.primAge %>% rename(Primary_Age = specimen_age, Primary_minAge = minimum_age, Primary_maxAge = maximum_age)# %>% mutate(age_reading_type = rep("primary", nrow(dat.primAge)))
 
 	} else {
 		ageDat = ageDat[!is.element(ageDat$ageing_method_desc, "OTOLITH SURFACE ONLY"),] # remove surface ages
 		## --- extract precision ages (ARID=3)
 		keep = match(c("species_common_name", "species_code", "ageing_method", "age_reading_type_code", "age_reading_id"), colnames(ageDat))
-		dat.precAge = ageDat[is.element(ageDat$age_reading_type_code,3), -keep]
+		dat.precAge = ageDat[is.element(ageDat$age_reading_type_code, atype[2]), -keep]
 		colnames(dat.precAge)[ match(c("specimen_age", "minimum_age","maximum_age"), colnames(dat.precAge)) ] = c("Prec_Age", "Prec_minAge", "Prec_maxAge")
 		## --- extract primary ages (ARID=2)
 		keep = match(c("species_common_name", "species_code", "ageing_method", "age_reading_type_code", "age_reading_id"), colnames(ageDat))
-		dat.primAge = ageDat[is.element(ageDat$age_reading_type_code,2), -keep]
+		dat.primAge = ageDat[is.element(ageDat$age_reading_type_code, atype[1]), -keep]
 		colnames(dat.primAge)[ match(c("specimen_age", "minimum_age","maximum_age"), colnames(dat.primAge)) ] = c("Primary_Age", "Primary_minAge", "Primary_maxAge")
 	}
 	## purging hadley to this point (won't bother further because function is now in PBSwicked)
 	## --- combine
 	dat.bySpecimen <- left_join(dat.primAge, dat.precAge, by = c("specimen_id", "year", "ageing_method_desc"))
 
-	# Add columns showing calculated differences in read ages 
+	## Add columns showing calculated differences in read ages 
 	dat.bySpecimen <- dat.bySpecimen %>% mutate(readerDiff = Primary_Age - Prec_Age)
 	
-	# Limit dataset to only double-reads
+	## Limit dataset to only double-reads
 	doubleReadDat <- dat.bySpecimen %>% filter(is.na(readerDiff)==FALSE)
 	
-	# Calculate overall proportion of double-read otoliths with the same age assigned by two readers
+	## Calculate overall proportion of double-read otoliths with the same age assigned by two readers
 	doubleReadDat <- doubleReadDat %>% mutate(indReaderSame=ifelse(doubleReadDat$readerDiff==0,1,0))
 	propSame_btReader  <-  nrow(doubleReadDat[doubleReadDat$indReaderSame == 1,]) / nrow(doubleReadDat) 
 	
-	# Calculate proportion of double-read otoliths with assigned ages less than one year off
+	## Calculate proportion of double-read otoliths with assigned ages less than one year off
 	doubleReadDat <- doubleReadDat %>% mutate(indReader1Year=ifelse(abs(doubleReadDat$readerDiff)<=1,1,0))  
 	prop1Year_btReader <- nrow(doubleReadDat[doubleReadDat$indReader1Year == 1,]) / nrow(doubleReadDat) 
 	
-	# Create table of proportion of double-read otoliths with the same age assigned by two readers, as a function of primary age
+	## Create table of proportion of double-read otoliths with the same age assigned by two readers, as a function of primary age
 	count_btReader_byAge <- doubleReadDat %>%  group_by(Primary_Age = as.factor(Primary_Age)) %>% summarise(totalCount=n(), sameCount=sum(indReaderSame)) %>% mutate(propSame=sameCount/totalCount)
 	
-	# Calculate table of proportion of double-read otoliths with the same age assigned by two readers, as a function of year
+	## Calculate table of proportion of double-read otoliths with the same age assigned by two readers, as a function of year
 	count_btReader_byYear <- doubleReadDat %>%  group_by(year = as.factor(year)) %>% summarise(totalCount=n(), sameCount=sum(indReaderSame)) %>% mutate(propSame=sameCount/totalCount)
 	
-	### Look at Sample Sizes for Double-read Pairs
+	## Look at Sample Sizes for Double-read Pairs
 	if (hadley) {
-		# Precision test sample sizes, by year
+		## Precision test sample sizes, by year
 		print.data.frame(count_btReader_byYear %>% select(year, N = totalCount))
 		# Precision test sample sizes, by final age
 		print.data.frame(count_btReader_byAge %>% select(Primary_Age, N = totalCount))
 	} else {
-		# Precision test sample sizes, by year
+		## Precision test sample sizes, by year
 		po1 = count_btReader_byYear[,c("year","totalCount")]; colnames(po1)[2]="N"; print.data.frame(po1)
-		# Precision test sample sizes, by final age
+		## Precision test sample sizes, by final age
 		po2 = count_btReader_byAge[,c("Primary_Age","totalCount")]; colnames(po2)[2]="N"; print.data.frame(po2)
 	}
+#browser();return()
 
-	## Exploratory Plots --------------------------
+	## Exploratory Plots
+	## --------------------------------------------
 	## Distribution of differences between readers over time
 	g_DistbyYear <- ggplot(doubleReadDat,aes(x=as.factor(year), y=readerDiff)) +geom_boxplot() + geom_hline(yintercept=0, color = "red") + coord_cartesian(ylim = c(-20, 20))  + ylab("Difference between readers") + xlab("Year")
 	fout.e = paste0("calcAE(", spcode, ")-DistbyYear")
 	for (l in lang) {
 		changeLangOpts(L=l)
-		fout = switch(l, 'e' = paste0("./english/",fout.e), 'f' = paste0("./french/",fout.e) )
+		fout = switch(l, 'e'=paste0("./english/",fout.e), 'f'=paste0("./french/",fout.e) )
 		if (png) {
 			createFdir(lang=l)
 			clearFiles(paste0(fout,".png"))
@@ -118,7 +127,7 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		if (png) dev.off()
 	}; eop()
 	
-	### Reader Comparison
+	## Reader Comparison
 	g_Scatter <- ggplot(doubleReadDat,aes(x=Primary_Age, y=Prec_Age)) + geom_point() + ylab("Precision Age Estimate") + xlab("Primary Age Estimate") + geom_abline(intercept = 0, slope = 1)
 	fout.e = paste0("calcAE(", spcode, ")-Scatter")
 	for (l in lang) {
@@ -135,9 +144,29 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 #browser();return()
 
 	## Fit Linear Regression
-	mod <- lm(Prec_Age ~ Primary_Age,doubleReadDat)
-	mod_summary <- summary(mod)
-	### Plot regression residuals:
+	mod.lm <- lm(Prec_Age ~ Primary_Age, doubleReadDat)
+	mod_summary <- summary(mod.lm)
+
+	## Try bootstrapping ages for precision readers from primary readers
+	if (debug) {
+		eval(parse(text="require(boot)"))
+		## 1. Define a function that returns the predictions
+		boot_predict <- function(data, indices) {
+			# Resample the data
+			d <- data[indices, ] 
+			# Refit the model
+			fit.lm  <- lm(Prec_Age ~ Primary_Age, data=d)
+			# Return predictions for new data
+			return(predict(fit.lm, newdata=data.frame('Primary_Age'=0:maxage)))
+		}
+		## 2. Run the bootstrap
+		results <- boot(data=doubleReadDat, statistic=boot_predict, R=10)
+		## 3. View the bootstrap distribution of predictions
+		.flush.cat(delim, "\n", "DEBUG : see object called 'results' -- bootstrapped ages (results$t)", "\n", delim, "\n", sep="")
+		browser()
+	}
+
+	## Plot regression residuals:
 	fout.e = paste0("calcAE(", spcode, ")-lm(prec~prim)-res")
 	for (l in lang) {
 		changeLangOpts(L=l)
@@ -152,7 +181,7 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		if (png) dev.off()
 	}; eop()
 #browser();return()
-	createTdir()
+	createTdir()  ## create directories called 'tables' and 'data'
 
 	residAge <- data.frame(Resids = mod_summary$residuals, Primary_Age = doubleReadDat$Primary_Age)
 	residAge <- as_tibble(residAge)
@@ -163,7 +192,7 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 	createTdir()
 	write.csv(sigAge, paste0("./tables/calcAE(", spcode, ")-sigAge.csv") )
 
-	### Plot SD vs primary age
+	## Plot SD vs primary age
 	fout.e = paste0("calcAE(", spcode, ")-sd-vs-primage")
 	for (l in lang) {
 		changeLangOpts(L=l)
@@ -177,118 +206,143 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		if (png) dev.off()
 	}; eop()
 	
-	## NWFSC Package AgeingError
-	## -------------------------
+	## NWFSC Package AgeingError (Schnute/Punt AE algorithm)
+	## -----------------------------------------------------
 	#require(tidyverse)
-	view = PBSmodelling::view  ## squash hadley wickham (but perhaps don't invoke his universe)
+	eval(parse(text="view = PBSmodelling::view"))  ## squash hadley wickham (but perhaps don't invoke his universe)
 
-	#install.packages("devtools")
-	#require(devtools)
-	#remotes::install_github("pfmc-assessments/AgeingError")
-	# using {pak}
-	#pak::pak("pfmc-assessments/AgeingError")
-	
-	# Load package Punt's package
-	eval(parse(text="require(AgeingError)"))
-	# This is where all runs will be located
-	AEdir <- "./data" #getwd()
-	SourceFile <- paste(AEdir,"nwfscAgeingError_src",sep="/")
-
-	Nreaders = 2 ## primary and precision
+	## Get AgeingError if needed
+	isAE = getVer(print=FALSE, all=TRUE, pat="AgeingError")
+	if (grepl("AgeingError", isAE[,1])) {
+		# Load package Punt's package
+		eval(parse(text="require(AgeingError)"))
+	} else {
+		isDT = getVer(print=FALSE, all=TRUE, pat="devtools")
+		if (grepl("devtools", isDT[,1])) {
+			eval(parse(text="require(devtools)"))
+		} else {
+			eval(parse(text="install.packages(\"devtools\")"))
+		}
+		eval(parse(text="remotes::install_github(\"pfmc-assessments/AgeingError\")"))
+		## using {pak}
+		# pak::pak("pfmc-assessments/AgeingError")
+	}
+	## This is where all runs will be located
+	AEdir    <- "./data"
+	Nreaders <- 2 ## primary and precision
 	dat      <- doubleReadDat
 	dat      <- dat %>% select(Primary_Age, Prec_Age)
 	AgeReads <- as.matrix(dat)
 	
 	## Format data
 	Nreaders = ncol(AgeReads)
-	AgeReads = ifelse(is.na(AgeReads),-999,AgeReads)  # Change NA to -999 (which the Punt software considers missing data)
-	# Potentially eliminate rows that are only read once
-	# These rows have no information about reading error, but are potentially informative about latent age-structure
-	# It is unknown whether eliminating these rows degrades estimation of error and bias, and is currently recommended to speed up computation
+	AgeReads = ifelse(is.na(AgeReads),-999,AgeReads)  ## Change NA to -999 (which the Punt software considers missing data)
+	## Potentially eliminate rows that are only read once
+	## These rows have no information about reading error, but are potentially informative about latent age-structure
+	## It is unknown whether eliminating these rows degrades estimation of error and bias, and is currently recommended to speed up computation
 	#KeepRow = ifelse(rowSums(ifelse(AgeReads==-999,0,1),na.rm=TRUE)<=1,FALSE,TRUE)
 	#AgeReads = AgeReads[KeepRow,]
-	
+
 	## Testing exclusion of ages > xx
-	AgeReads <- as.data.frame(AgeReads)
-	AgeReads <- AgeReads[AgeReads$Primary_Age<=maxage, ]
-	AgeReads <- as.matrix(AgeReads)
+	AgeReads  <- as.data.frame(AgeReads)  ## looks like this will be the input for the new 'run' function in 'AgeingError'
+	AgeReads1 <- AgeReads[AgeReads$Primary_Age<=maxage, ]
+	AgeReads1 <- as.matrix(AgeReads)
 
 	## Combine duplicate rows (see 'RunFn' example : James Thorson)
-	AgeReads2 = rMx(c(1, AgeReads[1,])) # AgeReads2 is the correctly formatted data object
-	for(RowI in 2:nrow(AgeReads)){
+	AgeReads2 = rMx(c(1, AgeReads1[1,])) # AgeReads2 is the correctly formatted data object
+	for(RowI in 2:nrow(AgeReads1)){
 		DupRow = NA
 		for(PreviousRowJ in 1:nrow(AgeReads2)){
-			if(all(AgeReads[RowI,1:Nreaders]==AgeReads2[PreviousRowJ,1:Nreaders+1])) DupRow = PreviousRowJ
+			if(all(AgeReads1[RowI,1:Nreaders]==AgeReads2[PreviousRowJ,1:Nreaders+1])) DupRow = PreviousRowJ
 		}
-		if(is.na(DupRow)) AgeReads2 = rbind(AgeReads2, c(1, AgeReads[RowI,])) # Add new row to AgeReads2
+		if(is.na(DupRow)) AgeReads2 = rbind(AgeReads2, c(1, AgeReads1[RowI,])) # Add new row to AgeReads2
 		if(!is.na(DupRow)) AgeReads2[DupRow,1] = AgeReads2[DupRow,1] + 1 # Increment number of samples for the previous duplicate
 	}
+	## sigopt 3, curvilinear coefficient of variation, i.e., a 3-parameter Hollings-form relationship of coefficient of variation with true age.
+	## note: sigopt 2 (curvilinear SD) estimates nonsense (at least for WWR)
 	BiasOpt = c(0,0)
-	SigOpt <- c(2,-1)
-	write.csv(AgeReads,  paste0("./tables/calcAE(", spcode, ")-AgeReads.csv") )    ## (RH 251020)
-	write.csv(AgeReads2, paste0("./tables/calcAE(", spcode, ")-AgeReads2.csv") )  ## (RH 251020)
-#browser();return()
+	SigOpt <- c(3,-1) 
 
 	## Define minimum and maximum ages for integral across unobserved ages
 	MinAge   = 1
 	MaxAge   = max(AgeReads)
 	KnotAges = list(NA, NA)
+
+	write.csv(AgeReads,  paste0("./tables/calcAE(", spcode, ")-AgeReads.csv") )   ## (RH 251020)
+	write.csv(AgeReads1, paste0("./tables/calcAE(", spcode, ")-AgeReads1.csv") )  ## (RH 260515)
+	write.csv(AgeReads2, paste0("./tables/calcAE(", spcode, ")-AgeReads2.csv") )  ## (RH 251020)
+
+	if (useTMB) {
+		## Ian Taylor suggests we use 'run' instead of 'RunFn', which is deprecated
+		write_files(dat=AgeReads, dir=AEdir, biasopt=BiasOpt, sigopt=SigOpt)
+		modRes <- try(run(directory=AEdir))
+		if(inherits(modRes, "try-error") ) {
+		message("------------------------\n'run' failed for some reason") ; print(modRes); setwd(cwd); browser(); return() }
+		
+		# see estimated parameters
+		modPar = modRes$model$par
+		# see model selection results
+		modSel = modRes$output$ModelSelection
+		# see ageing error matrices
+		modErr = modRes$output$ErrorAndBiasArray
+		Age    = 0:maxage
+		SD     = modErr["SD",paste("Age",Age),"Reader 1"]
+#browser();return()
+	} else {  ## old executable (deprecated, no longer tested)
+		SourceFile <- paste(AEdir,"nwfscAgeingError_src",sep="/")
+		modRes = try(RunFn(Data=AgeReads2, SigOpt=SigOpt, BiasOpt=BiasOpt, KnotAges=KnotAges,
+			NDataSets=1, MinAge=MinAge, MaxAge=MaxAge, RefAge=floor(maxage/2),
+			MinusAge=1, PlusAge=maxage, MaxSd=10, SaveFile=AEdir, AdmbFile=NULL, #SourceFile,
+			EffSampleSize=0, Intern=TRUE, JustWrite=FALSE, verbose=FALSE))
+		if(inherits(modRes, "try-error") ||  any(grepl("Error",modRes)) ) {
+			message("------------------------\n'RunFn' failed for some reason") ; print(modRes); setwd(cwd); browser(); return() }
+		## This stupid function goes into AEdir and stays there!
+		setwd(cwd)
+		# Plot output
+		# Data = AgeReads2; MaxAge = MaxAge; SaveFile = DateFile; PlotType = "PDF"
+		for (l in lang) {
+			changeLangOpts(L=l)
+			switch(l, 
+				'e' = { JTdir="./english/"; ReaderNames=c("Primary reader", "Precision reader") },
+				'f' = { JTdir="./french/"; ReaderNames=c("technicien principal", eval(parse(text=deparse("technicien de pr\u{00E9}cision"))) ) }
+			)
+			JTfig  = paste0(ReaderNames[1], " vs ", ReaderNames[2])
+			JTfigs = paste0(c(JTfig, "Estimated vs Observed Age Structure", "True vs Reads (by reader)"), ".png") 
+			## Need to hack 'PlotOutputFn' to get french fully implemented
+			output <- PlotOutputFn(Data=AgeReads2, MaxAge=MaxAge, SaveFile=AEdir,  PlotType="PNG", ReaderNames=ReaderNames)
+			AEdir = paste0(sub("/$","",AEdir),"/")
+			JTfigs = list.files(path=AEdir, pattern="\\.png$")
+			JTfigs.new = paste0("calcAE{", spcode, ")-", gsub("\\s+","_",JTfigs)) ## (RH 260210)
+			clearFiles(paste0(JTdir, JTfigs.new))
+			#file.copy(from=paste0(AEdir,JTfigs), to=JTdir, overwrite=T, copy.date=T)
+			file.copy(from=paste0(AEdir,JTfigs), to=paste0(JTdir,JTfigs.new), overwrite=T, copy.date=T)
+			JTtabs = list.files(path=AEdir, pattern="\\.csv$")
+			JTtabs.new = paste0("calcAE{", spcode, ")-", gsub("\\s+","_",JTtabs)) ## (RH 260210)
+			clearFiles(paste0("./tables/", JTtabs.new))
+			file.copy(from=paste0(AEdir,JTtabs), to=paste0("./tables/",JTtabs.new), overwrite=T, copy.date=T)
+			#file.remove(paste0(AEdir,JTfigs))
+		}; eop() ## lang loop
+		errorEsts <- output$ErrorAndBiasArray[,,1]
+		print(errorEsts)
+		write.csv(errorEsts, paste0("./tables/calcAE(", spcode, ")-ageErrorArray_model.csv") )
+		
+		Age  <- 1:(ncol(errorEsts)-1)
+		SD   <- as.numeric(errorEsts["SD",-1])
+		lfit <- lm(SD ~ Age)  ## not really useful for a curvilinear 
 	
-	RunFn(Data=AgeReads2, SigOpt=SigOpt, BiasOpt=BiasOpt, KnotAges=KnotAges,
-	      NDataSets=1, MinAge=MinAge, MaxAge=MaxAge, RefAge=10,
-	      MinusAge=1, PlusAge=17, SaveFile=AEdir, AdmbFile=SourceFile,
-	      EffSampleSize=0, Intern=FALSE, JustWrite=FALSE, verbose=FALSE)
-	## This stupid function goes into AEdir and stays there!
-	setwd(cwd)
-#browser();return()
-
-	# Plot output
-	# Data = AgeReads2; MaxAge = MaxAge; SaveFile = DateFile; PlotType = "PDF"
-	for (l in lang) {
-		changeLangOpts(L=l)
-		switch(l, 
-			'e' = { JTdir="./english/"; ReaderNames=c("Primary reader", "Precision reader") },
-			'f' = { JTdir="./french/"; ReaderNames=c("technicien principal", eval(parse(text=deparse("technicien de pr\u{00E9}cision"))) ) }
-		)
-		JTfig  = paste0(ReaderNames[1], " vs ", ReaderNames[2])
-		JTfigs = paste0(c(JTfig, "Estimated vs Observed Age Structure", "True vs Reads (by reader)"), ".png") 
-		## Need to hack 'PlotOutputFn' to get french fully implemented
-		output <- PlotOutputFn(Data=AgeReads2, MaxAge=MaxAge, SaveFile=AEdir,  PlotType="PNG", ReaderNames=ReaderNames)
-		AEdir = paste0(sub("/$","",AEdir),"/")
-		JTfigs = list.files(path=AEdir, pattern="\\.png$")
-		JTfigs.new = paste0("calcAE{", spcode, ")-", gsub("\\s+","_",JTfigs)) ## (RH 260210)
-		clearFiles(paste0(JTdir, JTfigs.new))
-		#file.copy(from=paste0(AEdir,JTfigs), to=JTdir, overwrite=T, copy.date=T)
-		file.copy(from=paste0(AEdir,JTfigs), to=paste0(JTdir,JTfigs.new), overwrite=T, copy.date=T)
-		JTtabs = list.files(path=AEdir, pattern="\\.csv$")
-		JTtabs.new = paste0("calcAE{", spcode, ")-", gsub("\\s+","_",JTtabs)) ## (RH 260210)
-		clearFiles(paste0("./tables/", JTtabs.new))
-		file.copy(from=paste0(AEdir,JTtabs), to=paste0("./tables/",JTtabs.new), overwrite=T, copy.date=T)
-#browser();return()
-		#file.remove(paste0(AEdir,JTfigs))
-		eop()
-	}
-	errorEsts <- output$ErrorAndBiasArray[,,1]
-
-	print(errorEsts)
-	write.csv(errorEsts, paste0("./tables/calcAE(", spcode, ")-ageErrorArray_model.csv") )
-	
-	Age  <- 1:(ncol(errorEsts)-1)
-	SD   <- as.numeric(errorEsts["SD",-1])
-	lfit <- lm(SD ~ Age)  ## not really useful for a curvilinear 
-
-	## Fit the linear model to log-transformed data
-	efit_lm <- lm(log(SD) ~ Age)
-	b_lm    <- coef(efit_lm)["Age"]
-	a_lm    <- exp(coef(efit_lm)["(Intercept)"])
-	cv_lm   <- summary(efit_lm)$sigma / mean(log(SD)) * 100 
-	## Fit the non-linear model
-#browser();return()
-	SD_add   <- a_lm * exp(b_lm * Age) + rnorm(length(Age), sd = summary(efit_lm)$sigma)
-	efit_nls <- nls(SD_add ~ a * exp(b * Age), start = list(a = 1, b = 0.1))
-	a_nls    <- coef(efit_nls)["a"]
-	b_nls    <- coef(efit_nls)["b"]
-	cv_nls   <- summary(efit_nls)$sigma / mean(log(SD)) * 100 
+		## Fit the linear model to log-transformed data
+		efit_lm <- lm(log(SD) ~ Age)
+		b_lm    <- coef(efit_lm)["Age"]
+		a_lm    <- exp(coef(efit_lm)["(Intercept)"])
+		cv_lm   <- summary(efit_lm)$sigma / mean(log(SD)) * 100 
+		## Fit the non-linear model
+	#browser();return()
+		SD_add   <- a_lm * exp(b_lm * Age) + rnorm(length(Age), sd = summary(efit_lm)$sigma)
+		efit_nls <- nls(SD_add ~ a * exp(b * Age), start = list(a = 1, b = 0.1))
+		a_nls    <- coef(efit_nls)["a"]
+		b_nls    <- coef(efit_nls)["b"]
+		cv_nls   <- summary(efit_nls)$sigma / mean(log(SD)) * 100 
+	} ## end old executable
 
 	fout.e = paste0("calcAE(", spcode, ")-model-sd-vs-age")
 	for (l in lang) {
@@ -300,18 +354,80 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 			png(paste0(fout,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
 		}
 		expandGraph(mfrow=c(1,1), mar=c(3.5,3.5,1,1), oma=c(0,0,0,0), mgp=c(2,0.5,0))
-		plot(Age, SD, pch=19, xlab=linguaFranca("Age",l), ylab=linguaFranca("Standard deviation at age",l), cex.axis=1.25, cex.lab=1.5, col="gainsboro")
-		abline(a=0, b=0.1, lwd=2, lty=3, col="red")
-		#abline(lfit, lwd=2, col="blue")
-		#lines(newAge, newSD, lwd=2, col="blue")
-		lines(Age, predict(efit_nls), col="chocolate1", lty=1, lwd=2)
-		lines(Age, exp(predict(efit_lm)), col = "blue", lty=5, lwd = 2) # Transform predictions back to original scale
-		points(Age, SD, pch=21, col="black", bg="cyan", cex=1.2)
-		legtxt = c(paste0("LM fitted CV ~ ",  round(cv_lm), "%"), paste0("NLS fitted CV ~ ",  round(cv_nls), "%"), "CASAL CV = 10%")
-		addLegend(0.05, 0.95, lty=c(1,5,3), col=c("chocolate1","blue","red"), lwd=2, seg.len=3, legend=legtxt, cex=1.2, bty="n", xjust=0)
+		plot(Age, SD, pch=19, xlab=linguaFranca("Age",l), ylab=linguaFranca("Standard deviation",l), cex.axis=1.25, cex.lab=1.5, col="gainsboro")
+		abline(a=0, b=0.1, lwd=2, lty=2, col="red")
+		if (useTMB) {
+			legtxt = legcol = leglty = legpch = legbg = NULL  ## in case we use stuff in debug
+			if (debug) {
+				.flush.cat(delim, "\n", "DEBUG : add in SD vs. Age for (min to max) data", "\n", delim, "\n", sep="")
+				## Attempt to create distribution from min and max age for each primary age
+				page = dat.primAge
+				pbins = as.list(rep(NA,maxage+1)); names(pbins)=0:maxage
+				for (i in 1:nrow(page)) {
+					ii = page[i, "Primary_Age"]
+					if (ii>maxage) next
+					iii = as.character(min(ii,maxage))
+					pbins[[iii]] = c(pbins[[iii]], page[i,"Primary_minAge"]:page[i,"Primary_maxAge"])
+				}
+				misguided = FALSE
+				if (misguided) { ## misguided attempt to plot the range at each age (but plot space is [SD,Age])
+					mino = crossTab(page, c("Primary_Age"), "Primary_minAge", function(x) {xx=x[x>0]; min(xx)})
+					maxo = crossTab(page, c("Primary_Age"), "Primary_maxAge", function(x) {xx=x[x>0]; max(xx)})
+					mnmx = cbind(mino,maxo)  ## assume the vectors are the same length for now
+					xrng = as.numeric(rownames(mnmx))
+					xrng = as.vector(sapply(xrng,function(x){c(x,x,NA)}))
+					yrng = as.vector(t(cbind(mnmx, rep(NA,nrow(mnmx)))))
+					lines(xrng, yrng, col="slategray")
+					browser()
+				}
+				## Calculate SDs assuming uniform distribution between amin and amax
+				sd.unif = sapply(pbins, sd, na.rm=T)
+				## Assuming min and max represent roughly the 0.5% and 99.5% quantiles, 99% of data falls within range
+				## qnorm(0.995) is approx 2.576
+				sd_from_min <- sapply(1:maxage, function(a) { if (all(is.na(pbins[[a+1]]))) NA else (a - min(pbins[[a+1]],na.rm=T)) / qnorm(0.995) })
+				sd_from_max <- sapply(1:maxage, function(a) { if (all(is.na(pbins[[a+1]]))) NA else (max(pbins[[a+1]],na.rm=T) - a) / qnorm(0.995) })
+				## Average them if the mean is perfectly centered
+				sd.norm <- c(NA, apply(cbind(sd_from_min, sd_from_max), 1, mean, na.rm=T) )
+				points(0:maxage, sd.norm, pch=17, col="purple")
+				## really need to do a cumulative legend but cannot be bothered for something not useful
+				legtxt = c("Approx. SD from (min, max)")
+				legcol="purple"; leglty=NA; legpch=17; legbg=NA
+			} ## end debug
+			## Use observed precision ages by primary age
+			age.obs = split(doubleReadDat$Prec_Age, doubleReadDat$Primary_Age)
+			sd.obs  = sapply(age.obs,sd)
+			use.obs = is.element(as.numeric(names(sd.obs)), 0:maxage)
+			sd.use  = sd.obs[use.obs]
+			age.use = as.numeric(names(sd.use))
+			points(age.use, sd.use, pch=16, col="deepskyblue")
+			## Fit the linear model to log-transformed data
+			fit.lm  = lm(log(sd.use) ~ age.use)
+			lines(age.use, exp(predict(fit.lm, newdata=data.frame('age.use'=age.use))), col="blue", lty=5, lwd=2) # Transform predictions back to original scale
+			## Fit a non-linear model
+			fit.nls = nls(sd.use ~ a * exp(b * age.use), start=list(a=1, b=0.1))
+			#lines(age.use, predict(fit.nls, newdata=data.frame('age.use'=age.use)), col="blue", lty=3, lwd=2) ## not really much different than linerar fit
+
+			legtxt = c(legtxt, "SD of precision ages at primary age", "linear model fit to log SD", "AgeingError SD fitting to CV (not points)", "CASAL CV = 0.10")
+			legcol = c(legcol, "deepskyblue","blue","black","red")
+			leglty = c(leglty, NA,5,1,2)
+			legpch = c(legpch, 16,NA,21,NA)
+			legbg  = c(legbg, NA,NA,"green",NA)
+		} else {
+			lines(Age, predict(efit_nls), col="chocolate1", lty=1, lwd=2)
+			lines(Age, exp(predict(efit_lm)), col = "blue", lty=5, lwd = 2) # Transform predictions back to original scale
+			legtxt = c(paste0("LM fitted CV ~ ",  round(cv_lm), "%"), paste0("NLS fitted CV ~ ",  round(cv_nls), "%"), "CASAL CV = 10%")
+			legcol = c("chocolate1","blue","red")
+			leglty = c(1,5,3)
+			legpch = c(NA,NA,NA)
+			legbg  = c(NA,NA,NA)
+		}
+		## Add the main AgeingError fit
+		lines(Age, SD, col="black", lwd=2)
+		points(Age, SD, pch=21, col="black", bg="green", cex=1.2)
+		addLegend(0.025, 0.975, legend=legtxt, pch=legpch, pt.bg=legbg, lty=leglty, col=legcol, pt.cex=1.2, pt.lwd=1, lwd=2, seg.len=3, cex=1.2, bty="n", xjust=0)
 		if (png) dev.off()
-	}; eop()
-#browser();return()
+	}; eop() ## end lang loop
+	if (debug) { browser(); return() }
 }
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~calcAE
 

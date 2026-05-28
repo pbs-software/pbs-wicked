@@ -9,7 +9,7 @@
 ##-----Supplementary hidden functions-----
 ##===============================================================================
 
-## wickSSD -----------------------------2026-02-13
+## wickSSD -----------------------------2026-05-28
 ## Get survey series data (SSD) for a species
 ##  using wicked Hadley Wickham code
 ## Code from NF to geo-standardize synoptic indices
@@ -20,7 +20,7 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 	if (missing(datnam))
 		datnam = paste0("data.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
 	if (!file.exists(paste0(datnam,".rda"))) {
-		ssids = gfdata::get_ssids()
+		eval(parse(text="ssids = gfdata::get_ssids()"))
 		if(survey_lab=="SYN QCS"){
 			ssid<-1
 		} else if (survey_lab=="SYN HS"){
@@ -37,11 +37,11 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 
 		## Executed through query 'get-survey-index.sql', which relies on GFBioSQL.dbo.BOOT_HEADER (not always up to date)
 		.flush.cat("Running query to get design-based index from BOOT_HEADER and BOOT_DETAIL\n")
-		rawindex <- gfdata::get_survey_index(species, ssid = ssid)  ## do this now rather than later in 'wickIDX()'
+		eval(parse(text="rawindex <- gfdata::get_survey_index(species, ssid = ssid)"))  ## do this now rather than later in 'wickIDX()'
 
 		## Get data, note that WCHG removed 2014 data because of < half of tows were completed. 
 		.flush.cat("Running query to get survey set data (SSD) -- takes forever\n")
-		survindex <- gfdata::get_survey_sets(species, ssid = ssid)  ## is this the query that takes forever?
+		eval(parse(text="survindex <- gfdata::get_survey_sets(species, ssid = ssid)"))  ## is this the query that takes forever?
 		.flush.cat("Finished query to get SSD\n")
 		save("ssids", "rawindex", "survindex", file=paste0(datnam,".rda"))  ## save query results temporarily in case following code bugs out
 	} else {
@@ -68,13 +68,13 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 	colnames(surv) <- c('year','catch_weight','log_area_swept','present','depth','X','Y')
 
 	## Code to fill in missing depths
-	surv_wutm <- gfplot:::ll2utm(surv, utm_zone = 9) 
+	eval(parse(text="surv_wutm <- gfplot:::ll2utm(surv, utm_zone = 9)"))
 	## The following (originally) seemed to assume that there are missing depths (RH 260213)
 	## Treat zero depths as missing
 	bad_depths = surv_wutm$depth<=0 | is.na(surv_wutm$depth)
 	if (any(bad_depths)) {
 		surv_wutm$depth[bad_depths] = NA
-		get_depth <- gfplot:::interp_survey_bathymetry(surv_wutm)
+		eval(parse(text="get_depth <- gfplot:::interp_survey_bathymetry(surv_wutm)"))
 		## Line that actually fills it in
 		surv$depth[bad_depths] <- surv_wutm$depth[bad_depths] <- get_depth$data$akima_depth[bad_depths]
 	}
@@ -84,7 +84,7 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 #browser();return()
 	
 	## Getting UTMs back in
-	surv_wUTM <- gfplot:::ll2utm(surv, utm_zone = 9)
+	eval(parse(text="surv_wUTM <- gfplot:::ll2utm(surv, utm_zone = 9)"))
 
 	if (survey_lab=="SYN WCHG"){
 		mesh <- make_mesh(surv_wUTM, xy_cols = c("X", "Y"), cutoff = 8)  #10km mesh except for WCHG, which had mesh cutoff of 8km, these cutoffs are based on default for gfsynopsis report
@@ -104,7 +104,7 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~wickSSD
 
 
-## wickTMB -----------------------------2026-02-16
+## wickTMB -----------------------------2026-05-28
 ## Run TMB geostatistical models and choose the best one;
 ##  uses wicked Hadley Wickham code
 ## Code from NF to geo-standardize synoptic indices
@@ -187,11 +187,11 @@ wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		abline(a=0,b=1)
 	}
 	## Create extrapolation grid for prediction to sum over to make eventual index 
-	survey_grid <- gfplot::synoptic_grid |>
+	eval(parse(text="survey_grid <- gfplot::synoptic_grid |>
 		filter(survey == survey_lab) |>
-		select(X, Y, area = cell_area, depth=depth)
+		select(X, Y, area = cell_area, depth=depth)"))
 
-	nd <- sdmTMB::replicate_df(dat = survey_grid, time_name = "year", time_values = unique(surv_wUTM_TMB$year))
+	eval(parse(text="nd <- sdmTMB::replicate_df(dat = survey_grid, time_name = \"year\", time_values = unique(surv_wUTM_TMB$year))"))
 	## Making the standardized variable for the prediction. Remember this is using the mean log depth of the original dataset
 	nd$log_depth_c <- (log(nd$depth)-mean(log(surv_wUTM_TMB$depth)))/sd(log(surv_wUTM_TMB$depth))
 	nd$log_depth_c2 <- nd$log_depth_c^2
@@ -213,7 +213,7 @@ wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~wickTMB
 
 
-## pickIDX -----------------------------2026-02-16
+## pickIDX -----------------------------2026-05-28
 ## Plot the results of fitting the best TMB model;
 ##   uses wicked Hadley Wickham code
 ## Code from NF to geo-standardize synoptic indices
@@ -250,7 +250,7 @@ pickIDX <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		stop("Run the models first using function 'wickTMB()' to get a suitable index")
 	}
 	## Plotting using wicked Wickham's routines
-	theme_set(ggsidekick::theme_sleek())  ## SA construct
+	eval(parse(text="theme_set(ggsidekick::theme_sleek())"))  ## SA construct
 
 	plot_map <- function(dat, column) {
 		ggplot(dat, aes(X, Y, fill = {{ column }})) +

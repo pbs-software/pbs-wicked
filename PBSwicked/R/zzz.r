@@ -40,7 +40,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "delta_gamma", "delta_gengamma", "delta_lognormal", "depth",
   "epsilon_st2", "est", "est2", "est_non_rf2", 
   "facet_wrap", "fishing_event_id", "full_join",
-  "geom_raster", "get_index", "ggplot", "ggtitle",
+  "geom_raster", "get_depth", "get_index", "ggplot", "ggtitle",
   "hook_adjust_factor",
   "indReaderSame",
   "make_mesh", "maximum_age", "mesh", "minimum_age", "mnam",
@@ -48,7 +48,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "PlotOutputFn", "Prec_Age", "predictions", "Primary_Age", "prop_bait_hooks",
   "rawindex", "readerDiff", "Resids", "rMx", "RunFn",
   "sameCount", "sanity", "scale_fill_gradient2", "scale_fill_viridis_c", "sdmTMB", "sdmTMBcontrol",
-  "select", "species", "specimen_age", "surv_wUTM", "survey", 
+  "select", "species", "specimen_age", "surv_wUTM", "survey", "survindex",
   "theme_set", "tidy", "total_hooks", "totalCount", "tweedie",
   "X",
   "Y", "year"
