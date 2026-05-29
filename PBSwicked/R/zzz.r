@@ -47,7 +47,7 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "omega_s2",
   "PlotOutputFn", "Prec_Age", "predictions", "Primary_Age", "prop_bait_hooks",
   "rawindex", "readerDiff", "Resids", "rMx", "RunFn",
-  "sameCount", "sanity", "scale_fill_gradient2", "scale_fill_viridis_c", "sdmTMB", "sdmTMBcontrol",
+  "sameCount", "sanity", "SaveAll", "scale_fill_gradient2", "scale_fill_viridis_c", "sdmTMB", "sdmTMBcontrol",
   "select", "species", "specimen_age", "surv_wUTM", "survey", "survindex",
   "theme_set", "tidy", "total_hooks", "totalCount", "tweedie",
   "X",

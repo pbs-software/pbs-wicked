@@ -11,6 +11,13 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.4.2 (2026-05-29)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Modified `calcAE' to better control figure output (RH 260529)
+      - tapped into AgeingError's code to determine how to call function `plot_output'
+      - improved the french figure outputs (but some remain embedded in AgeingError code)
+      - added code to clean up (move and/or remove) png and csv files
+
 0.4.1 (2026-05-28)  [Rcheck=T, Rbuild=T]
   * R code
     + Modified `calcAE' to better represent the final figure of SD vs. Age from the AgeingError model (RH 260528)

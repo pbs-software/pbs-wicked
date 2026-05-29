@@ -11,7 +11,7 @@ akima, dplyr, ggplot2, sdmTMB, sp
 
 # writeLines(imports_for_undefined_globals(txt))
 
-importFrom("AgeingError", "run", "write_files")
+importFrom("AgeingError", "plot_output", "run", "RunFn", "write_files")
 importFrom("boot", "boot")
 importFrom("fmesher", "fm_rcdt_2d_inla", "fm_nonconvex_hull", "fm_fem", "fm_basis")
 importFrom("gfdata", "get_ssids", "get_survey_index", "get_survey_sets")

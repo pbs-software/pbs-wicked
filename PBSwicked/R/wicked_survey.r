@@ -10,7 +10,7 @@
 ## Note: not sure whether to rename functions so it's obvious that they are wicked
 ## See object `wickiverb' for possible guidance (RH 260506)
 
-## calcAE-------------------------------2026-05-28
+## calcAE-------------------------------2026-05-29
 ##  Calculate ageing error using the function 'run()'
 ##  from the R package 'AgeingError'.
 ## Note: function 'RunFn()' now deprecated (Ian Taylor, pers.commm.)
@@ -32,6 +32,8 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		"999"
 	) ## defunct
 	#spcode = "AE" ## AE=AgeingError : just keep it the same for all species
+
+	fr = function(x) { eval(parse(text=deparse(x))) }  ## convert text with unicode to accented nonsense
 
 	## From gfsynopsis res doc appendix A, it seems likely that age_reading_type_code = 2 is the initial primary age, while age_reading_type_code = 3 is the precision age.
 
@@ -108,12 +110,20 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		## Precision test sample sizes, by final age
 		po2 = count_btReader_byAge[,c("Primary_Age","totalCount")]; colnames(po2)[2]="N"; print.data.frame(po2)
 	}
-#browser();return()
 
 	## Exploratory Plots
 	## --------------------------------------------
+	## Stupid themes for stupid ggplots
+	themeAE = theme(
+		panel.background = element_rect(fill="white"), 
+		panel.border = element_rect(colour="black", fill=NA, size=1),
+		axis.title = element_text(size=18), ## Changes both X and Y titles
+		axis.text  = element_text(size=12)  ## Changes both X and Y tick labels
+	)
+	
 	## Distribution of differences between readers over time
-	g_DistbyYear <- ggplot(doubleReadDat,aes(x=as.factor(year), y=readerDiff)) +geom_boxplot() + geom_hline(yintercept=0, color = "red") + coord_cartesian(ylim = c(-20, 20))  + ylab("Difference between readers") + xlab("Year")
+	g_DistbyYear <- ggplot(doubleReadDat,aes(x=as.factor(year), y=readerDiff)) + geom_boxplot(fill="chartreuse") + geom_hline(yintercept=0, color = "red") + coord_cartesian(ylim = c(-15, 15))  + ylab("Difference between readers") + xlab("Year")
+
 	fout.e = paste0("calcAE(", spcode, ")-DistbyYear")
 	for (l in lang) {
 		changeLangOpts(L=l)
@@ -123,9 +133,12 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 			clearFiles(paste0(fout,".png"))
 			png(paste0(fout,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
 		}
-		print(g_DistbyYear)
+		g_DistbyYear_out = g_DistbyYear + themeAE
+		if (l=="f") g_DistbyYear_out = g_DistbyYear_out + xlab(fr("ann\u{00E9}e")) + ylab(fr("diff\u{00E9}rence entre les techniciens"))
+		print(g_DistbyYear_out)
 		if (png) dev.off()
 	}; eop()
+#browser();return()
 	
 	## Reader Comparison
 	g_Scatter <- ggplot(doubleReadDat,aes(x=Primary_Age, y=Prec_Age)) + geom_point() + ylab("Precision Age Estimate") + xlab("Primary Age Estimate") + geom_abline(intercept = 0, slope = 1)
@@ -138,7 +151,9 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 			clearFiles(paste0(fout,".png"))
 			png(paste0(fout,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
 		}
-		print(g_Scatter)
+		g_Scatter_out = g_Scatter + themeAE
+		if (l=="f") g_Scatter_out = g_Scatter_out + xlab(fr("estimation de l'\u{00E2}	ge primaire")) + ylab(fr("estimation d'\u{00E2}ge pr\u{00E9}cise"))
+		print(g_Scatter_out)
 		if (png) dev.off()
 	}; eop()
 #browser();return()
@@ -164,7 +179,7 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		## 3. View the bootstrap distribution of predictions
 		.flush.cat(delim, "\n", "DEBUG : see object called 'results' -- bootstrapped ages (results$t)", "\n", delim, "\n", sep="")
 		browser()
-	}
+	} ## end debug
 
 	## Plot regression residuals:
 	fout.e = paste0("calcAE(", spcode, ")-lm(prec~prim)-res")
@@ -176,8 +191,12 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 			clearFiles(paste0(fout,".png"))
 			png(paste0(fout,".png"), units="in", res=pngres, width=PIN[1], height=PIN[2])
 		}
-		plot(doubleReadDat$Primary_Age, mod_summary$residuals)
-		abline(h=0, col="red")
+		plot(doubleReadDat$Primary_Age, mod_summary$residuals, type="n", cex.axis=1.2, cex.lab=1.5, xlab=linguaFranca("Age by primary reader",l), ylab=linguaFranca("Residuals",l))
+		abline(h=0, col="blue")
+		zpos = mod_summary$residuals > 0
+		zneg = mod_summary$residuals <= 0
+		points(doubleReadDat$Primary_Age[zpos], mod_summary$residuals[zpos], pch=24, col="green4", bg="green")
+		points(doubleReadDat$Primary_Age[zneg], mod_summary$residuals[zneg], pch=25, col="red", bg="pink")
 		if (png) dev.off()
 	}; eop()
 #browser();return()
@@ -267,6 +286,7 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 	MinAge   = 1
 	MaxAge   = max(AgeReads)
 	KnotAges = list(NA, NA)
+	ReaderNames = c("Primary reader", "Precision reader")
 
 	write.csv(AgeReads,  paste0("./tables/calcAE(", spcode, ")-AgeReads.csv") )   ## (RH 251020)
 	write.csv(AgeReads1, paste0("./tables/calcAE(", spcode, ")-AgeReads1.csv") )  ## (RH 260515)
@@ -278,8 +298,23 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		modRes <- try(run(directory=AEdir))
 		if(inherits(modRes, "try-error") ) {
 		message("------------------------\n'run' failed for some reason") ; print(modRes); setwd(cwd); browser(); return() }
-		
-		# see estimated parameters
+		## run() generates png files  automatically
+
+		## Hacked into AgeingErorr to figure out how to use the function 'plot_output'
+		## Note that both run() and ProcessResults() will produce these plots.
+		load(file.path(AEdir, "AgeingError.lda"))  ## contains SaveAll
+		for (l in lang) {
+			## french is only partly there (e.g., ReaderNames and delimiters) but will have to do for now
+			changeLangOpts(L=l)
+			switch(l, 
+				'e' = { SaveDir="./english/"; ReaderNames=c("Primary reader", "Precision reader") },
+				'f' = { SaveDir="./french/";  ReaderNames=c("technicien principal", eval(parse(text=deparse("technicien de pr\u{00E9}cision"))) ) }
+			)
+			plot_output(Data=AgeReads2, IDataSet=1, MaxAge=SaveAll$data$MaxAge, Report=SaveAll$report, 
+				Nparameters=length(SaveAll$parameters$SDPar), LogLike=SaveAll$report$Obj_fun, 
+				subplot=1:3, ReaderNames=ReaderNames, Species="AgeingError", SaveDir=SaveDir)
+		} ; eop()
+#		# see estimated parameters
 		modPar = modRes$model$par
 		# see model selection results
 		modSel = modRes$output$ModelSelection
@@ -344,6 +379,20 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 		cv_nls   <- summary(efit_nls)$sigma / mean(log(SD)) * 100 
 	} ## end old executable
 
+	## Clenup the mess left behind from AgeingError
+	## Remove png files:
+	pngs = normalizePath(list.files(path=AEdir, pattern="\\.png$", full.names=TRUE), winslash="/")
+	rubbish = file.remove(pngs)
+	## Move csv files to './tables' (we'll have to assume that AEdir is relative to the cwd)
+	for (idir in c("./french", "./english", AEdir)) {
+		csvs = list.files(path=idir, pattern="\\.csv$")
+		if (length(csvs)>0) {
+			CSVdir  = sub("\\./.*", "./tables", idir)
+			rubbish = file.copy(from=file.path(idir,csvs), to=file.path(CSVdir,csvs), overwrite=TRUE, copy.date=TRUE)
+			rubbish = file.remove(file.path(idir,csvs))
+		}
+	}
+
 	fout.e = paste0("calcAE(", spcode, ")-model-sd-vs-age")
 	for (l in lang) {
 		changeLangOpts(L=l)
@@ -390,7 +439,7 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 				sd.norm <- c(NA, apply(cbind(sd_from_min, sd_from_max), 1, mean, na.rm=T) )
 				points(0:maxage, sd.norm, pch=17, col="purple")
 				## really need to do a cumulative legend but cannot be bothered for something not useful
-				legtxt = c("Approx. SD from (min, max)")
+				legtxt = switch(l, 'e'="Approx. SD from (min, max)", 'f'=fr("\u{00C9}T approximatif (min, max)"))
 				legcol="purple"; leglty=NA; legpch=17; legbg=NA
 			} ## end debug
 			## Use observed precision ages by primary age
@@ -407,7 +456,12 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 			fit.nls = nls(sd.use ~ a * exp(b * age.use), start=list(a=1, b=0.1))
 			#lines(age.use, predict(fit.nls, newdata=data.frame('age.use'=age.use)), col="blue", lty=3, lwd=2) ## not really much different than linerar fit
 
-			legtxt = c(legtxt, "SD of precision ages at primary age", "linear model fit to log SD", "AgeingError SD fitting to CV (not points)", "CASAL CV = 0.10")
+			legtxt = switch(l,
+				'e'={c(legtxt, "SD of precision ages at primary age", "linear model fit to log SD", "AgeingError SD fitting to CV (not points)", "CASAL CV = 0.10")},
+				'f'={c(legtxt, fr("\u{00C9}T des \u{00E2}ges de pr\u{00E9}cision \u{00E0} l'\u{00E2}ge primaire"), 
+					fr("Mod\u{00E8}le lin\u{00E9}aire ajust\u{00E9} au logarithme de l'\u{00C9}T"), 
+					fr("AgeingError \u{00C9}T ajust\u{00E9} au CV (pas aux points)"), "CASAL CV = 0,10")}
+			)
 			legcol = c(legcol, "deepskyblue","blue","black","red")
 			leglty = c(leglty, NA,5,1,2)
 			legpch = c(legpch, 16,NA,21,NA)
