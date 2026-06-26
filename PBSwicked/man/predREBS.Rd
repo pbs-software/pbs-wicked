@@ -5,8 +5,8 @@
   Predict REBS from Location
 }
 \description{
-  Predict the porpotion of Rougheye Rockfish (RER) from REBS data
-  using two-dimensional space (longitude, latitude) along the BC ocast
+  Predict the proportion of Rougheye Rockfish (RER) from REBS data
+  using two-dimensional space (longitude, latitude) along the BC coast.
 }
 \usage{
 predREBS(dat, indvar=c("X","Y"), cutoff=5, rmSM=TRUE, 

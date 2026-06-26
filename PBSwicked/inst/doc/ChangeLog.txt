@@ -11,6 +11,14 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.4.3 (2026-06-26)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Modified `calcAE' to derive similar final plot between the TMB and deprecated executable (RH 260626)
+      - done primarily to get a revised figure for the SGR 2025 WP/RD
+      - reorganized and reduced redundant code
+  * Documentation
+    + Added new documentation file called `PBSwicked-package.Rd' (RH 260626)
+
 0.4.2 (2026-05-29)  [Rcheck=T, Rbuild=T]
   * R code
     + Modified `calcAE' to better control figure output (RH 260529)
