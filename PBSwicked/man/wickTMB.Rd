@@ -8,8 +8,8 @@
   Run Template Model Builder (TMB) geostatistical models and choose the best one.
 }
 \usage{
-wickTMB(survey_lab="SYN QCS", species="silvergray rockfish", 
-   tmbModels, datnam, modnam, idxnam, verbose=FALSE, plot=TRUE)
+wickTMB(survey_lab="SYN QCS", species="silvergray rockfish",
+   tmbModels, datnam, modnam, idxnam, verbose=FALSE, refit=FALSE, plot=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,6 +20,8 @@ wickTMB(survey_lab="SYN QCS", species="silvergray rockfish",
   \item{modnam}{\code{character} -- output name of binary RDA file to store all model results}
   \item{idxnam}{\code{character} -- output name of binary RDA file to store chosen index results}
   \item{verbose}{\code{logical} -- if \code{TRUE}, spew summary results onto the R console}
+  \item{refit}{\code{logical} -- if \code{TRUE}, refit the 14 TMB models, 
+    ignoring any potentially useful binary results from a previous fit}
   \item{plot}{\code{logical} -- if \code{TRUE}, plot the results}
 }
 \details{
@@ -61,7 +63,7 @@ wickTMB(survey_lab="SYN QCS", species="silvergray rockfish",
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus opus}: remote office, Vancouver BC\cr
-  Last modified \code{Rd: 2026-02-16}
+  Last modified \code{Rd: 2026-09-30}
 }
 \note{
   Original code from Nick Fisch to determine geo-standardized synoptic survey indices.\cr

@@ -9,13 +9,16 @@
   GFBioSQL database (housed at DFO).
 }
 \usage{
-wickSSD(survey_lab="SYN QCS", species="silvergray rockfish", datnam, plot=TRUE)
+wickSSD(survey_lab="SYN QCS", species="silvergray rockfish",
+   datnam, query=FALSE, plot=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{survey_lab}{\code{character} -- label for survey series}
   \item{species}{\code{character} -- genus species for specific rockfish}
   \item{datnam}{\code{character} -- optional output name of binary RDA file to store the data}
+  \item{query}{\code{logical} -- if \code{TRUE}, query the GFBioSQL database using Sean's
+    \code{gfdata} package, ignoring any potentially useful binary data from a previous query}
   \item{plot}{\code{logical} -- if \code{TRUE}, plot the results}
 }
 \details{
@@ -43,11 +46,16 @@ wickSSD(survey_lab="SYN QCS", species="silvergray rockfish", datnam, plot=TRUE)
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus opus}: remote office, Vancouver BC\cr
-  Last modified \code{Rd: 2026-02-13}
+  Last modified \code{Rd: 2026-09-30}
 }
 \note{
   Original code from Nick Fisch to determine geo-standardized synoptic survey indices.\cr
   Uses Hadley Wickham pseudo-R packages and pixie dust.
+
+  Package \code{gfdata} now contains a pre-compiled bootstrap data.frame for
+  the design-based survey estimates (called \code{gfdata::design_indexes}).
+  If survey has no pre-compiled summary, use the function 
+  \code{gfdata::get_design_index()}.
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \section{Function Calls}{
@@ -71,10 +79,13 @@ wickSSD(survey_lab="SYN QCS", species="silvergray rockfish", datnam, plot=TRUE)
 		}
 }
 \seealso{
-  In package \pkg{PBSwicked}:\cr
+In package \pkg{PBSwicked}:\cr
   \code{\link[PBSwicked]{wickTMB}},
   \code{\link[PBSwicked]{tmbModels}},
   \code{\link[PBSwicked]{pickIDX}}
+In package \pkg{gfdata}:\cr
+  \code{\link[gfdata]{design_indexes}},
+  \code{\link[gfdata]{get_design_index}}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):

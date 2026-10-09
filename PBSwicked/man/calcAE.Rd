@@ -8,8 +8,8 @@
 }
 \usage{
 calcAE(ageDat, atype=c(2,3), species="silvergray rockfish",
-   hadley=FALSE, maxage=60, useTMB=TRUE, debug=FALSE,
-   png=FALSE, pngres=400, PIN=c(8,8), lang="e")
+	hadley=FALSE, maxage=60, useTMB=TRUE, debug=FALSE,
+	png=FALSE, pngres=400, PIN=c(8,8), lang="e")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -74,10 +74,10 @@ Statistical models for the analysis of ageing error}.
 Can. J. Fish. Aquat. Sci. 49(9). 1801--1815.
 }
 \author{
-  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
+  \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish (until 2026)\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus opus}: remote office, Vancouver BC\cr
-  Last modified \code{Rd: 2026-05-28}
+  Last modified \code{Rd: 2026-09-25}
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{

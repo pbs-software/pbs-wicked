@@ -8,9 +8,9 @@
   Pick (create pictures of) prediction maps and geospatial index series.
 }
 \usage{
-pickIDX(survey_lab="SYN QCS", species="silvergray rockfish", 
+pickIDX(survey_lab="SYN QCS", species="silvergray rockfish",
    datnam, idxnam, pixnam, plot.maps=FALSE, tabs=FALSE,
-   png=FALSE, pngres=400, PIN=c(8, 6), lang=c("f","e"))
+   png=FALSE, pngres=400, PIN=c(8,6), lang=c("f","e"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -46,6 +46,10 @@ pickIDX(survey_lab="SYN QCS", species="silvergray rockfish",
   Saves RDA containing images of prediction maps
   created by Wickham's galactic algorithm \code{ggplot}.\cr
   RDA example: \code{plot.SYN.QCS.silvergray.rda}
+  
+  More importantly, plots the geospatial index series along with the 
+  design-based series. Also outputs the annual indices to CSV files
+  in the \code{"./tables/"} directory. Leaves one feeling Wickhamless.
 }
 \references{
 	Anderson, SC, Ward, EJ, English, PA, Barnett, LAK, and Thorson, JT. (2024)
@@ -59,7 +63,7 @@ pickIDX(survey_lab="SYN QCS", species="silvergray rockfish",
   \href{mailto:rowan.haigh@dfo-mpo.gc.ca}{Rowan Haigh}, Program Head -- Offshore Rockfish\cr
   Pacific Biological Station (PBS), Fisheries & Oceans Canada (DFO), Nanaimo BC\cr
   \emph{locus opus}: remote office, Vancouver BC\cr
-  Last modified \code{Rd: 2026-02-16}
+  Last modified \code{Rd: 2026-09-30}
 }
 \note{
   Original code from Nick Fisch to determine geo-standardized synoptic survey indices.\cr

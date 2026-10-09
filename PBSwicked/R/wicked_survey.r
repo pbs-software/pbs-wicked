@@ -10,13 +10,13 @@
 ## Note: not sure whether to rename functions so it's obvious that they are wicked
 ## See object `wickiverb' for possible guidance (RH 260506)
 
-## calcAE-------------------------------2026-06-26
+## calcAE-------------------------------2026-09-22
 ##  Calculate ageing error using the function 'run()'
 ##  from the R package 'AgeingError'.
 ## Note: function 'RunFn()' now deprecated (Ian Taylor, pers.commm.)
 ##  Adapted from Kendra Holt's code used in Petrale 2024
 ##  Attempt to de-hadley the code
-##  ageDat  : use data from 'gfb_age_precision.sql'
+##  ageDat  : use data from 'gfb_age_precision.sql' (via 'PBStools::plotAgeError.r')
 ##  atype   : AGE_READING_TYPE_CODE (1=Final, 2=Primary, 3=Precision, 4=Secondary)
 ##  species : common species name
 ## ---------------------------------------------RH
@@ -251,6 +251,13 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 	dat      <- dat %>% select(Primary_Age, Prec_Age)
 	AgeReads <- as.matrix(dat)
 
+	## PJS wants to see 
+	dat4pjs  <- doubleReadDat %>% select(specimen_id, year, Primary_Age, Prec_Age)
+	dat4pjs$precDiff  <- dat4pjs$Prec_Age - dat4pjs$Primary_Age
+	minPrecAnom <- 5
+	dat4slc <- dat4pjs[abs(dat4pjs$precDiff) >= minPrecAnom,]
+#browser();return()
+
 	## Format data
 	Nreaders = ncol(AgeReads)
 	AgeReads = ifelse(is.na(AgeReads), -999, AgeReads)  ## Change NA to -999 (which the Punt software considers missing data)
@@ -382,11 +389,13 @@ calcAE <- function (ageDat, atype=c(2,3), species="silvergray rockfish",
 	sd.obs  = sapply(age.obs,sd)
 	use.obs = is.element(as.numeric(names(sd.obs)), 0:maxage)  ## restricts data to less than that used by AgeigError
 	use.obs = rep(TRUE, length(age.obs))  ## use all data in linear model
-	sd.use  = sd.obs[use.obs]
+	sd.use  = sd.obs[use.obs & !is.na(sd.obs) & sd.obs > 0]  ## (RH 260922) expanded the criteria for useable data in lm fit
 	#sd.use[is.na(sd.use)] = GT0(0)  ## complete rubbish
 	age.use = as.numeric(names(sd.use))
 	## Fit the linear model to log-transformed data
-	fit.lm  = lm(log(sd.use) ~ age.use) 
+#browser();return()
+	fit.lm  = lm(log(sd.use) ~ age.use)
+
 
 	## Cleanup the mess left behind from AgeingError
 	## Remove png files:

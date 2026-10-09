@@ -9,17 +9,17 @@
 ##-----Supplementary hidden functions-----
 ##===============================================================================
 
-## wickSSD -----------------------------2026-05-28
+## wickSSD -----------------------------2026-09-30
 ## Get survey series data (SSD) for a species
 ##  using wicked Hadley Wickham code
 ## Code from NF to geo-standardize synoptic indices
 ## ------------------------------------------NF|RH
 wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
-   datnam, plot=TRUE)
+   datnam, query=FALSE, plot=TRUE)
 {
 	if (missing(datnam))
-		datnam = paste0("data.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
-	if (!file.exists(paste0(datnam,".rda"))) {
+		datnam = paste0("./data/data.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
+	if (query || !file.exists(paste0(datnam,".rda"))) {
 		eval(parse(text="ssids = gfdata::get_ssids()"))
 		if(survey_lab=="SYN QCS"){
 			ssid<-1
@@ -28,27 +28,50 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		} else if (survey_lab=="SYN WCVI"){
 			ssid<-4
 		} else if (survey_lab=="SYN WCHG"){
-			ssid<-16
+			ssid<-c(8,16)
 		}
 		##  1 = Queen Charlotte Sound Synoptic Bottom Trawl
 		##  3 = Hecate Strait Synoptic Bottom Trawl
 		##  4 = West Coast Vancouver Island Synoptic Bottom Trawl
+		##  8 = 1997 West Coast Haida Gwaii Rockfish
 		## 16 = West Coast Haida Gwaii Synoptic Bottom Trawl SYN WCHG (8km mesh)
 
-		## Executed through query 'get-survey-index.sql', which relies on GFBioSQL.dbo.BOOT_HEADER (not always up to date)
-		.flush.cat("Running query to get design-based index from BOOT_HEADER and BOOT_DETAIL\n")
-		eval(parse(text="rawindex <- gfdata::get_survey_index(species, ssid = ssid)"))  ## do this now rather than later in 'wickIDX()'
+		## Now uses Sean Anderson's data.frame of design indices (RH 260923)
+		## Used to be executed through query 'get-survey-index.sql', which relied on GFBioSQL.dbo.BOOT_HEADER (now deprecated)
+		## Function pickIDX() only needs column names 'year', 'biomass', 'lowerci', and 'upperci'
+		.flush.cat("Running query to get design-based index from gfdata::design_indexes\n")
+		## [deprecated] eval(parse(text="rawindex <- gfdata::get_survey_index(species, ssid = ssid)")) 
+		eval(parse(text="rawindex <- gfdata::design_indexes"))  ## do this now rather than later in 'pickIDX()'
+		rawindex <- rawindex[is.element(rawindex$species_common_name, species) & is.element(rawindex$survey_abbrev, survey_lab),]
+		if ( 8 %in% ssid ) { ## need to bootstrap 1997 WCHG Rockfish
+			boot8   <- gfdata::get_design_index(species=species, ssid=8, reps=1000)
+			boot8in <- boot8[, colnames(rawindex)]
+			boot8in[1,1] <- survey_lab
+			rawindex <- rbind(boot8in, rawindex)
+		}
+		if (survey_lab=="SYN WCHG"){
+			## Note for WCHG : removed 2014 data because less than half of tows were completed. 
+			rawindex <- rawindex[-which(rawindex$year==2014),]
+		}
+		if (survey_lab=="SYN WCVI" && species=="widow rockfish"){
+			rawindex <- rawindex[-which(rawindex$year==2010),]
+		}
+		tabatha  = paste0("./tables/rawindex.", gsub(" +",".",survey_lab) )
+		clearFiles(paste0(tabatha, ".csv"))
+		write.csv (rawindex, file=paste0(tabatha, ".csv"), row.names=FALSE) ## (RH 260930)
 
-		## Get data, note that WCHG removed 2014 data because of < half of tows were completed. 
 		.flush.cat("Running query to get survey set data (SSD) -- takes forever\n")
 		eval(parse(text="survindex <- gfdata::get_survey_sets(species, ssid = ssid)"))  ## is this the query that takes forever?
 		.flush.cat("Finished query to get SSD\n")
+		clearFiles(paste0(datnam,".rda"))
 		save("ssids", "rawindex", "survindex", file=paste0(datnam,".rda"))  ## save query results temporarily in case following code bugs out
 	} else {
 		load(paste0(datnam, ".rda"))
 	}
+#browser();return()
 	surv = survindex
 	if (survey_lab=="SYN WCHG"){
+		## Note for WCHG : removed 2014 data because less than half of tows were completed. 
 		surv <- surv[-which(surv$year==2014),]
 	}
 	if (survey_lab=="SYN WCVI" && species=="widow rockfish"){
@@ -96,7 +119,7 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 
 	## Mesh (RH 251205) cannot seem to change appearance of mesh with par() arguments
 	if (plot) {
-		##require(fmesher) ## functions needed imported from fmesher in package PBSwicked
+		##require(fmesher) ## functions need to be imported from fmesher in package PBSwicked
 		expandGraph()
 		plot(mesh)
 	}
@@ -104,17 +127,17 @@ wickSSD <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~wickSSD
 
 
-## wickTMB -----------------------------2026-05-28
+## wickTMB -----------------------------2026-09-29
 ## Run TMB geostatistical models and choose the best one;
 ##  uses wicked Hadley Wickham code
 ## Code from NF to geo-standardize synoptic indices
 ## ------------------------------------------NF|RH
 wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
-   tmbModels, datnam, modnam, idxnam, verbose=FALSE, plot=TRUE)
+   tmbModels, datnam, modnam, idxnam, verbose=FALSE, refit=FALSE, plot=TRUE)
 {
 	## Need to attach the survey series binary data object
 	if (missing(datnam))
-		datnam = paste0("data.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
+		datnam = paste0("./data/data.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
 	if (file.exists(paste0(datnam,".rda"))) {
 		attach(paste0(datnam,".rda"))
 	} else {
@@ -129,8 +152,8 @@ wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		data("tmbModels", package="PBSwicked", envir=ici)
 	}
 	if (missing(modnam))
-		modnam = paste0("model.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
-	if (!file.exists(paste0(modnam,".rda"))) {
+		modnam = paste0("./data/model.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
+	if (refit || !file.exists(paste0(modnam,".rda"))) {
 		.flush.cat("Started fitting ", length(tmbModels), " models -- takes forever\n", sep="")
 		modres    <- lapply(tmbModels[1:14], function(fun) { fun(surv_wUTM, mesh) })  ## Takes about 30 minutes
 		save("modres", file=paste0(modnam, ".rda"))
@@ -138,16 +161,20 @@ wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		load(paste0(modnam, ".rda"))
 	}
 	## Remove the non-converged models
+	nmod_original = length(modres)
 	modres = modres[!is.na(modres)]
+	nmod_converge = length(modres)
 	## Get the AIC values for the 14 TMB models
 	AIC_table <- as.data.frame(matrix(sapply(modres,AIC), ncol=1, dimnames=list(model=names(modres), stat='AIC')))
 #browser();return()
 	AIC_order <- AIC_table[order(AIC_table$AIC),,drop=FALSE]
 	## Remove models with AIC=NA
 	good_AIC = !is.na(AIC_order$AIC)
+	nmod_AIC_NA = sum(!good_AIC)
 	AIC_order = AIC_order[good_AIC,,drop=FALSE]
-	print(AIC_order) ## always want to see this
 	nmods  = nrow(AIC_order)
+	.flush.cat("AIC order (lowest to highest) after removal of ", nmod_original - nmod_converge - nmod_AIC_NA, " models (not converged or AIC=NA)", "\n", sep="")
+	print(AIC_order) ## always want to see this
 
 	## Basically troll through models until sanity is achieved
 	sane = FALSE; eye=0
@@ -155,18 +182,22 @@ wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 	while (!sane) {
 		eye  = eye + 1
 		if (eye>nmods) stop ("ALL MODELS INSANE !!!")
-		.flush.cat("...", rownames(AIC_order)[eye], "\n", sep="")
 		mod  = substring(rownames(AIC_order)[eye], 1, 2)
 		#m    = modres[[as.numeric(mod)]] ## won't work when some models have not converged
 		mpos = grep(mod, names(modres))
 		m    = modres[[mpos]]
 		mnam = names(modres)[mpos]
-#browser();return()
 		exam = try( suppressMessages(sanity(m, silent=TRUE)), silent=TRUE )
-		if (inherits(exam,"try-error"))
+		if (inherits(exam,"try-error")) {
 			sane = FALSE
-		else
+			.flush.cat("... delulu  : ", rownames(AIC_order)[eye], "\n", sep="")
+		} else {
 			sane = all(unlist(exam))
+			if (sane)
+				.flush.cat("... trululu : ", rownames(AIC_order)[eye], "\n\n", sep="")
+			else
+				.flush.cat("... delulu  : ", rownames(AIC_order)[eye], "\n", sep="")
+		}
 	}
 	if (verbose) {
 		m$sd_report
@@ -205,7 +236,7 @@ wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		print(index)
 	}
 	if (missing(idxnam))
-		idxnam = paste0("index.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
+		idxnam = paste0("./data/index.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
 	save("index", "predictions", "nd", "survey_grid", "surv_wUTM_TMB", "AIC_order", "m", "mnam", file=paste0(idxnam,".rda"))
 #browser();return()
 	return(index) ## data for geostatistical index
@@ -213,7 +244,7 @@ wickTMB <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~wickTMB
 
 
-## pickIDX -----------------------------2026-05-28
+## pickIDX -----------------------------2026-09-29
 ## Plot the results of fitting the best TMB model;
 ##   uses wicked Hadley Wickham code
 ## Code from NF to geo-standardize synoptic indices
@@ -236,14 +267,14 @@ pickIDX <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		"UNK" )
 	## Need to attach the binary data and index objects
 	if (missing(datnam))
-		datnam = paste0("data.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
+		datnam = paste0("./data/data.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
 	if (file.exists(paste0(datnam,".rda"))) {
 		attach(paste0(datnam,".rda"))
 	} else {
 		stop("Run the models first using function 'wickSSD()' to get suitable data")
 	}
 	if (missing(idxnam))
-		idxnam = paste0("index.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
+		idxnam = paste0("./data/index.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
 	if (file.exists(paste0(idxnam,".rda"))) {
 		attach(paste0(idxnam,".rda"))
 	} else {
@@ -298,7 +329,7 @@ pickIDX <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 		}
 	}
 	## Raw Index
-	#rawindex <- gfdata::get_survey_index(species, ssid = ssid)  ## now run in 'wickSSD()'
+	#rawindex -- now collected in 'wickSSD()'
 	raw           <- as.data.frame(cbind(rawindex$year,rawindex$biomass,rawindex$lowerci,rawindex$upperci))
 	colnames(raw) <- c('year','est','lwr','upr')
 	raw$type      <- 'Design'
@@ -306,7 +337,7 @@ pickIDX <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 	index_DM      <- full_join(raw, index) ## D=design, M=model
 
 	if (missing(pixnam))
-		pixnam = paste0("plot.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
+		pixnam = paste0("./data/plot.",gsub("\\s+",".",survey_lab),".",strsplit(species,split="\\s+")[[1]][1])
 
 	## Plotting by geomean
 	## -------------------
@@ -328,13 +359,15 @@ pickIDX <- function(survey_lab="SYN QCS", species="silvergray rockfish",
 	save("fig.FE.RE", "fig.FE", "fig.S.RE", "fig.ST.RE", "index_DM", "index_GM", file=paste0(pixnam,".rda"))
 	## Schmush together for output
 	if (tabs) {
-		write.csv (index_DM, paste0(sub("plot","indexDM",pixnam),".csv"), row.names=F)
-		write.csv (index_GM, paste0(sub("plot","indexGM",pixnam),".csv"), row.names=F)
+		tabatha  = sub("plot","indexDM", sub("/data/","/tables/", pixnam))
+		write.csv (index_DM, paste0(tabatha, ".csv"), row.names=FALSE)
+		samantha = sub("plot","indexGM", sub("/data/","/tables/", pixnam))
+		write.csv (index_GM, paste0(samantha, ".csv"), row.names=FALSE)
 	}
 	xlim = c(2002,2025); ylim=c(0,max(ydhi))
 	xlim = range(xgeo) + c(-0.5,0.5); ylim=c(0,max(c(yghi,ydhi), na.rm=TRUE))
 
-	fout.e = pixnam
+	fout.e = basename(pixnam)
 	for (l in lang) {
 		changeLangOpts(L=l)
 		fout = switch(l, 'e' = paste0("./english/",fout.e), 'f' = paste0("./french/",fout.e) )
