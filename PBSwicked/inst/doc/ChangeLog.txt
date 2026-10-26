@@ -11,11 +11,20 @@ CRAN package version numbers follow a "major.minor.patch" format (e.g., 1.2.3), 
 	Patch: Indicates bug fixes and minor improvements that do not introduce new features.
 -----------------------------------
 
+0.5.0 (2026-10-23)  [Rcheck=T, Rbuild=T]
+  * R code
+    + Added new function `calcTweedie' (RH 261023)
+  * SQL code
+    + Added a new folder `sql' to house a few queries called by wicked functions (RH 261023)
+      - may be redundancy with SQL queries in PBStools
+  * Documentation
+    + Added `Gemini-Fitting_Tweedie_CPUE_with_glmmTMB.pdf' (261023)
+
 0.4.4 (2026-10-09)  [Rcheck=T, Rbuild=T]
   * R code
     + Modified geospatial functions \code{'wickSSD'}, \code{'wickTMB'}, and \code{'pickIDX'} (RH 260930)
       - a few new arguments, a kick up the arse, and a general feeling of indulgence
-    + Modified `calcAE' in several places (RH 260922)
+    + Modified function `calcAE' in several places (RH 260922)
       - added some code lines to determine records with the largest divergence between Primary and Precision ages
       - expanded the criteria to exclude data going into : lm(log(sd.use) ~ age.use (to prevent crashes)
 

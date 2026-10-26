@@ -35,7 +35,7 @@ https://github.com/pbs-software
 # ===================
 if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "aes", "age_reading_id", "ageing_method_desc",
-  "cell_area", "coord_fixed",
+  "catch_kg", "cell_area", "coord_fixed",
   "count_bait_only", "count_bent_broken", "count_empty_hooks", "count_non_target_species", "count_target_species",
   "delta_gamma", "delta_gengamma", "delta_lognormal", "depth",
   "epsilon_st2", "est", "est2", "est_non_rf2", 
@@ -48,7 +48,8 @@ if(getRversion() >= "2.15.1") utils::globalVariables(names=c(
   "PlotOutputFn", "Prec_Age", "predictions", "Primary_Age", "prop_bait_hooks",
   "rawindex", "readerDiff", "Resids", "rMx", "RunFn",
   "sameCount", "sanity", "SaveAll", "scale_fill_gradient2", "scale_fill_viridis_c", "sdmTMB", "sdmTMBcontrol",
-  "select", "species", "specimen_age", "specimen_id", "strSpp", "surv_wUTM", "survey", "survindex",
+  "select", "species", "species_code", "specimen_age", "specimen_id", "spp.fit", 
+  "strSpp", "surv_wUTM", "survey", "survindex",
   "theme_set", "tidy", "total_hooks", "totalCount", "tweedie",
   "X",
   "Y", "year"

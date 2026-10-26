@@ -13,16 +13,25 @@ akima, dplyr, ggplot2, sdmTMB, sp
 
 importFrom("AgeingError", "plot_output", "run", "RunFn", "write_files")
 importFrom("boot", "boot")
+importFrom("emmeans", "emmeans")
 importFrom("fmesher", "fm_rcdt_2d_inla", "fm_nonconvex_hull", "fm_fem", "fm_basis")
 importFrom("gfdata", "get_ssids", "get_survey_index", "get_survey_sets")
 #importFrom("gfplot", "ll2utm", "interp_survey_bathymetry", "synoptic_grid")  ## not exported from gfplot
 importFrom("ggsidekick", "theme_sleek")
-importFrom("graphics", "abline", "arrows", "axis", "box", "image", "legend", "lines", "points", "polygon")
-importFrom("grDevices", "colorRampPalette", "dev.off")
+importFrom("glmmTMB", "glmmTMB")
+importFrom("graphics", "abline", "arrows", "axis", "box", "grid", "image", 
+	"legend", "lines", "par", "points", "polygon")
+importFrom("grDevices", "colorRampPalette", "dev.off", "rgb")
 importFrom("here", "here")
-importFrom("PBSmapping", "addPolys", "convUL", "plotMap")
-importFrom("PBSmodelling", "addLabel", "addLegend", "expandGraph", "lucent", "show0", "unpackList")
-importFrom("PBStools", ".flush.cat", "addStrip", "changeLangOpts", "clearFiles", "createFdir", "createTdir", "crossTab", "eop", "getVer", "lenv", "linguaFranca", "toUpper", "zapSeamounts")
-importFrom("stats", "AIC", "binomial", "coef", "lm", "nls", "predict", "qnorm", "qqnorm", "residuals", "rnorm", "sd")
+importFrom("PBSmapping", "addPolys", "clipPolys", "convUL", "plotMap")
+importFrom("PBSmodelling", "addLabel", "addLegend", "expandGraph", "calcGM",
+	"lucent", "pad0", "show0", "unpackList")
+importFrom("PBStools", ".flush.cat", "addStrip", "changeLangOpts", "clearFiles", 
+	"countVec", "createFdir", "createTdir", "crossTab", "eop", "getData", "getVer", 
+	"lenv", "linguaFranca", "tlisp", "toUpper", "ttcall", "ttput", "zapSeamounts")
+importFrom("stats", "AIC", "binomial", "coef", "lm", "nls", "poly", "predict", 
+	"qnorm", "qqnorm", "residuals", "rnorm", "sd")
+importFrom("tibble", "as_tibble")
 importFrom("utils", "data", "write.csv")
+
 
